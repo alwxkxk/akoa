@@ -1,0 +1,14 @@
+{
+  "name": "akoa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "alwxkxk",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.3.0"
+  }
+}
