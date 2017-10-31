@@ -1,14 +1,13 @@
 const Koa = require('koa')
 const router = require('./router.js')
 const handleError = require('koa-handle-error')
+const logger = require('koa-logger')
 const app = new Koa()
 
-const onError = err => {
-  console.error(err)
-}
+app.use(handleError((err)=>{console.error(err)}))  // 错误处理
+app.use(logger())// 访问日志记录
+app.use(router.middleware())//路由文件
 
-app.use(handleError(onError))  // must register first!
-app.use(router.middleware())
 app.listen(3000, () => {
   console.log('listening ' + 'http://localhost:3000')
 })
