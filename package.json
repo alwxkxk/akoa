@@ -21,6 +21,7 @@
   "license": "ISC",
   "dependencies": {
     "koa": "^2.3.0",
+    "koa-better-body": "^3.0.4",
     "koa-better-router": "^2.1.1",
     "koa-handle-error": "0.0.5",
     "koa-logger": "^3.1.0"
