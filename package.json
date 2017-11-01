@@ -20,6 +20,7 @@
   "author": "alwxkxk",
   "license": "ISC",
   "dependencies": {
+    "bunyan": "^1.8.12",
     "koa": "^2.3.0",
     "koa-better-body": "^3.0.4",
     "koa-better-router": "^2.1.1",
