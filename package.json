@@ -25,6 +25,7 @@
     "koa-better-router": "^2.1.1",
     "koa-handle-error": "0.0.5",
     "koa-logger": "^3.1.0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "mysql": "^2.15.0"
   }
 }
