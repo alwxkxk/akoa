@@ -4,10 +4,11 @@ let config = {
     port: '63759',
     user: 'root',
     password: 'geeku@2017',
-    database: 'test'
+    database: 'test',
+    debug: true
   },
   logConfig: {
-    logDay: 3
+    logDay: 1 // 日志保存天数
   }
 }
 module.exports = config
