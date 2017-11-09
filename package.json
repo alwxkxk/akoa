@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/utilities.test.js "
   },
   "nodemonConfig": {
     "ignore": [
@@ -28,5 +28,11 @@
     "koa-logger": "^3.1.0",
     "lodash": "^4.17.4",
     "mysql": "^2.15.0"
+  },
+  "devDependencies": {
+    "md5": "^2.2.1",
+    "mocha": "^4.0.1",
+    "moment": "^2.19.1",
+    "power-assert": "^1.4.4"
   }
 }
