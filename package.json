@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha test/utilities.test.js "
+    "test": "mocha --require intelli-espower-loader test/mysql.test.js"
+  },
+  "standard": {
+    "globals": [ "describe", "it" ]
   },
   "nodemonConfig": {
     "ignore": [
@@ -30,6 +33,7 @@
     "mysql": "^2.15.0"
   },
   "devDependencies": {
+    "intelli-espower-loader": "^1.0.1",
     "md5": "^2.2.1",
     "mocha": "^4.0.1",
     "moment": "^2.19.1",
