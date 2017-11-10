@@ -4,32 +4,18 @@ let mysqlConfig = require('../config/config.js').mysqlConfig
 let sqlQuery = require('../config/sql-query.js')
 
 var pool = mysql.createPool(mysqlConfig)
-pool.on('acquire', function (connection) {
-  console.log('Connection %d acquired', connection.threadId)
-})
-pool.on('connection', function (connection) {
-  console.log('Connection %d built', connection.threadId)
-})
-pool.on('enqueue', function () {
-  console.log('Waiting for available connection slot')
-})
-pool.on('release', function (connection) {
-  console.log('Connection %d released', connection.threadId)
-})
-
-// checkDb('test')
-//   .then(v => { console.log('checkdb2:', v) })
-//   .catch(e => { console.log('err', e) })
-// hasDb('test')
-// .then(v=>console.log(v))
-// .catch(e=>{console.log(e)})
-
-// insert('user',['name','password','nick_name','create_time','last_time'],['alw','123456','alwxkxk','2011-04-08 0:00:00','2011-04-08 0:00:00'])
-// .then(v => { console.log(v) })
-// .catch(e => { console.log(e) })
-// read('user',['name','id','password'])
-// .then(v => { console.log(v) })
-// .catch(e => { console.log(e) })
+// pool.on('acquire', function (connection) {
+//   console.log('Connection %d acquired', connection.threadId)
+// })
+// pool.on('connection', function (connection) {
+//   console.log('Connection %d built', connection.threadId)
+// })
+// pool.on('enqueue', function () {
+//   console.log('Waiting for available connection slot')
+// })
+// pool.on('release', function (connection) {
+//   console.log('Connection %d released', connection.threadId)
+// })
 
 /**
  * 执行sql语句，返回Promise对象
@@ -40,7 +26,7 @@ pool.on('release', function (connection) {
 function query (queryString) {
   return new Promise((resolve, reject) => {
     pool.query(queryString, function (error, results, fields) {
-      if (error) reject(error)
+      if (error) return reject(error)
       resolve(results)
     })
   })
@@ -59,7 +45,34 @@ function insert (tableName, column, value) {
     let sqlString = mysql.format('INSERT INTO ?? (??)VALUES (?);', [tableName, column, value])
     // console.log(sqlString)
     pool.query(sqlString, function (error, results, fields) {
-      if (error) reject(error)
+      if (error) return reject(error)
+      resolve(results)
+    })
+  })
+}
+
+/**
+ *
+ *
+ * @param {string} tableName 表名
+ * @param {array} whereList where列表
+ * @returns {Promise} 返回Promise对象，resolve results,reject err
+ */
+function sqlDelete (tableName, whereList) {
+  // DELETE FROM 表名称 WHERE 列名称 = 值
+  return new Promise((resolve, reject) => {
+    let sqlString = 'DELETE FROM ?? '
+    if (whereList) {
+      if (whereList % 2) return reject(new Error('whereList should be even.'))
+      else {
+        sqlString += 'WHERE ?? = ? ' + _.repeat(['AND ?? = ? '], whereList.length / 2 - 1) + ';'
+      }
+    }
+
+    sqlString = mysql.format(sqlString, _.concat(tableName, whereList))
+    // console.log(sqlString)
+    pool.query(sqlString, function (error, results, fields) {
+      if (error) return reject(error)
       resolve(results)
     })
   })
@@ -70,30 +83,58 @@ function insert (tableName, column, value) {
  *
  * @param {string} tableName 表名
  * @param {array} selectList 想要获取的值
- * @param {array} whereList 想要获取的值
+ * @param {array} whereList where列表
  * @returns {Promise} 返回Promise对象，resolve results,reject err
  */
 function read (tableName, selectList, whereList) {
   return new Promise((resolve, reject) => {
-    let sqlString = ''
+    if (!tableName && !selectList) return reject(new Error('tableName and selectList must not be null'))
+    let sqlString = 'SELECT ?? FROM ??'
 
     if (whereList) {
       if (whereList.length % 2) { // WHERE 语句要求数组必须有偶数个
-        reject(new Error('whereList should be even.'))
+        return reject(new Error('whereList should be even.'))
       } else { // 动态生成 WHERE ，AND 语句
-        let str = 'SELECT ?? FROM ?? WHERE ?? = ?'
-        str += _.repeat([' AND ?? = ?'], whereList.length / 2 - 1)
-        str += ';'
-        sqlString = mysql.format(str, _.concat([selectList, tableName], whereList))
+        sqlString += 'WHERE ?? = ? ' + _.repeat(['AND ?? = ? '], whereList.length / 2 - 1) + ';'
       }
-    } else {
-      sqlString = mysql.format('SELECT ?? FROM ??;', [selectList, tableName])
     }
+
+    sqlString = mysql.format(sqlString, _.concat([selectList, tableName], whereList))
+    // console.log(sqlString)
+    pool.query(sqlString, function (error, results, fields) {
+      if (error) return reject(error)
+      else resolve(results)
+    })
+  })
+}
+
+/**
+ * 更新表
+ *
+ * @param {string} tableName 表名
+ * @param {array} setList 想要更新的值
+ * @param {array} whereList where列表
+ * @returns {Promise} 返回Promise对象，resolve results,reject err
+ */
+function updated (tableName, setList, whereList) {
+  return new Promise((resolve, reject) => {
+    if (!setList || setList.length % 2) return reject(new Error('setList should be even.'))
+    // UPDATE 表名称 SET 列名称 = 新值 WHERE 列名称 = 某值
+    let sqlString = 'UPDATE ?? ' + _.repeat('SET ?? = ? ', setList.length / 2)
+
+    if (whereList) {
+      if (whereList.length % 2) return reject(new Error('whereList should be even.'))
+      else {
+        sqlString += 'WHERE ?? = ? ' + _.repeat(['AND ?? = ? '], whereList.length / 2 - 1) + ';'
+      }
+    }
+
+    sqlString = mysql.format(sqlString, _.concat(tableName, setList, whereList))
 
     // console.log(sqlString)
     pool.query(sqlString, function (error, results, fields) {
-      if (error) reject(error)
-      resolve(results)
+      if (error) return reject(error)
+      else resolve(results)
     })
   })
 }
@@ -134,5 +175,7 @@ module.exports = {
   initTable: initTable,
   insert: insert,
   read: read,
-  end: end
+  end: end,
+  updated: updated,
+  sqlDelete: sqlDelete
 }
