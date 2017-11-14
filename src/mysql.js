@@ -33,7 +33,7 @@ function query (queryString) {
 }
 
 /**
- * 向某个表插入值
+ * 向某个表插入行
  *
  * @param {string} tableName 表名
  * @param {string|array} column 列表值
@@ -42,7 +42,7 @@ function query (queryString) {
  */
 function insert (tableName, column, value) {
   return new Promise((resolve, reject) => {
-    if (!tableName && !column&&!value) return reject(new Error('tableName , column and value must not be null'))
+    if (!tableName || !column || !value) return reject(new Error('tableName , column and value must not be null'))
     let sqlString = mysql.format('INSERT INTO ?? (??)VALUES (?);', [tableName, column, value])
     // console.log(sqlString)
     pool.query(sqlString, function (error, results, fields) {
@@ -53,7 +53,7 @@ function insert (tableName, column, value) {
 }
 
 /**
- *
+ *删除行
  *
  * @param {string} tableName 表名
  * @param {array} whereList where列表
@@ -62,7 +62,7 @@ function insert (tableName, column, value) {
 function sqlDelete (tableName, whereList) {
   // DELETE FROM 表名称 WHERE 列名称 = 值
   return new Promise((resolve, reject) => {
-    if (!tableName && !whereList) return reject(new Error('tableName and whereList must not be null'))
+    if (!tableName || !whereList) return reject(new Error('tableName and whereList must not be null'))
     let sqlString = 'DELETE FROM ?? '
     if (whereList) {
       if (whereList % 2) return reject(new Error('whereList should be even.'))
@@ -90,7 +90,7 @@ function sqlDelete (tableName, whereList) {
  */
 function read (tableName, selectList, whereList) {
   return new Promise((resolve, reject) => {
-    if (!tableName && !selectList) return reject(new Error('tableName and selectList must not be null'))
+    if (!tableName || !selectList) return reject(new Error('tableName and selectList must not be null'))
     let sqlString = 'SELECT ?? FROM ??'
 
     if (whereList) {
