@@ -1,6 +1,7 @@
 
 var bunyan = require('bunyan')
 let logConfig = require('../config/config.js').logConfig
+const path = require('path')
 var log = bunyan.createLogger({
   name: 'myapp',
   streams: [
@@ -9,21 +10,21 @@ var log = bunyan.createLogger({
       period: '1d',
       count: logConfig.logDay,
       level: 'info',
-      path: '../log/info.log'
+      path: path.resolve(__dirname, '../log/info.log')
     },
     {
       type: 'rotating-file',
       period: '1d',
       count: logConfig.logDay,
       level: 'warn',
-      path: '../log/warn.log'
+      path: path.resolve(__dirname, '../log/warn.log')
     },
     {
       type: 'rotating-file',
       period: '1d',
       count: logConfig.logDay,
       level: 'error',
-      path: '../log/error.log'
+      path: path.resolve(__dirname, '../log/error.log')
     }
   ]
 })
