@@ -4,8 +4,9 @@ let body = require('koa-better-body')
 let _ = require('lodash')
 let User = require('./class/User.js')
 let uti = require('./utilities.js')
+const Joi = require('joi')
 
-let api = Router({ prefix: '/api' })  // 所有API路由都有api前缀 
+let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 
 // POST /api/test 测试专用API 返回请求的所有信息
 router.post('/test', body(), function * (next) {
@@ -23,11 +24,21 @@ router.post('/test', body(), function * (next) {
 
 // POST /api/user 注册用户
 router.post('/user', body(), function * (next) {
-  // 只提取所需数据
-  let body = _.pick(this.request.fields, ['name', 'password'])
-  console.log(body)
+    // 参数检查
+  let data = this.request.fields
+  const schema = Joi.object().keys({
+    name: Joi.string().min(3).max(30).required(),
+    password: Joi.string().min(3).max(30).required()
+  })
+  const result = Joi.validate(data, schema, {abortEarly: false})
+  if (result.error) {
+    let details = {details: _.map(result.error.details, 'message')}
+    this.response.body = uti.httpResponse(1, '注册账号失败', details)
+  } else this.response.body = uti.httpResponse(0, '注册账号成功')
+
   this.response.type = 'json'
-  this.response.body = uti.httpResponse(0, '注册账号成功')
+  // TODO: 在数据库创建账号
+
   yield next
 })
 
@@ -35,9 +46,9 @@ router.post('/user', body(), function * (next) {
 router.post('/session', body(), function * (next) {
   // 只提取所需数据
   let body = _.pick(this.request.fields, ['name', 'password'])
-  // TODO:创建token 保存到缓存 token set cookie ?set header?
+  // TODO:创建token 保存到缓存 客户端自行保存到本地以作登陆凭证，按需设为header
   console.log(body)
-  this.response.body = uti.httpResponse(0, '用户登陆成功', {token: '12345678abcdefg'})
+  this.response.body = uti.httpResponse(0, '用户登陆成功', { token: '12345678abcdefg' })
   yield next
 })
 
