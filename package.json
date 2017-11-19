@@ -6,10 +6,13 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/mysql.test.js"
+    "test": "mocha --require intelli-espower-loader --delay test/api.test.js"
   },
   "standard": {
-    "globals": [ "describe", "it" ]
+    "globals": [
+      "describe",
+      "it"
+    ]
   },
   "nodemonConfig": {
     "ignore": [
@@ -18,7 +21,7 @@
       "package-lock.json",
       "package.json"
     ],
-    "delay": "1000"
+    "delay": "500"
   },
   "author": "alwxkxk",
   "license": "ISC",
@@ -37,6 +40,7 @@
     "md5": "^2.2.1",
     "mocha": "^4.0.1",
     "moment": "^2.19.1",
-    "power-assert": "^1.4.4"
+    "power-assert": "^1.4.4",
+    "supertest": "^3.0.0"
   }
 }
