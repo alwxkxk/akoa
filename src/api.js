@@ -23,8 +23,34 @@ router.post('/test', body(), function * (next) {
 })
 
 // POST /api/user 注册用户
-router.post('/user', body(), function * (next) {
-    // 参数检查
+router.post('/user', body(), async function (ctx, next) {
+  // 参数检查
+  // let ctx = this
+  let post = ctx.request.fields
+  ctx.response.type = 'json'
+  const schema = Joi.object().keys({
+    name: Joi.string().min(3).max(30).required(),
+    password: Joi.string().min(3).max(30).required()
+  })
+  const result = Joi.validate(post, schema, {abortEarly: false})
+
+  if (result.error) {
+    let details = {details: _.map(result.error.details, 'message')}
+    ctx.response.body = uti.httpResponse(1, '注册账号失败', details)
+  } else {
+    await User.register(post.name, post.password)
+    .then(() => { ctx.response.body = uti.httpResponse(0, '注册账号成功') })
+    .catch((err) => { ctx.response.body = uti.httpResponse(1, '注册账号失败', {detail: err}) })
+  }
+  return next()
+},
+function * (next) {
+  yield next
+})
+
+// POST /api/session  用户登陆成功 创建新的会话
+router.post('/session', body(), function * (next) {
+  // 参数检查
   let data = this.request.fields
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
@@ -33,22 +59,12 @@ router.post('/user', body(), function * (next) {
   const result = Joi.validate(data, schema, {abortEarly: false})
   if (result.error) {
     let details = {details: _.map(result.error.details, 'message')}
-    this.response.body = uti.httpResponse(1, '注册账号失败', details)
-  } else this.response.body = uti.httpResponse(0, '注册账号成功')
-
-  this.response.type = 'json'
-  // TODO: 在数据库创建账号
-
-  yield next
-})
-
-// POST /api/session  用户登陆成功 创建新的会话
-router.post('/session', body(), function * (next) {
-  // 只提取所需数据
-  let body = _.pick(this.request.fields, ['name', 'password'])
+    this.response.body = uti.httpResponse(1, '用户登陆失败', details)
+  } else {
   // TODO:创建token 保存到缓存 客户端自行保存到本地以作登陆凭证，按需设为header
-  console.log(body)
-  this.response.body = uti.httpResponse(0, '用户登陆成功', { token: '12345678abcdefg' })
+    this.response.body = uti.httpResponse(0, '用户登陆成功', { token: '12345678abcdefg' })
+  }
+  this.response.type = 'json'
   yield next
 })
 
@@ -69,6 +85,7 @@ router.del('/user/:name', body(), function * (next) {
   // 从header中提取出token  只有管理员与或属用户的token才能进行账号注销
   let token = this.request.header.token
   let name = this.request.url.split('/').pop()// 分离并取最后的/:id
+  // TODO:敏感操作，应该弹窗提示 是否确认这样做 或许甚至理当输入密码才能做。
   this.response.body = uti.httpResponse(0, '账号注销成功')
   yield next
 })
