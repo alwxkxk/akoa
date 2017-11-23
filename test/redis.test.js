@@ -11,11 +11,12 @@ setTimeout(function () {
     })
     describe('redis 简单测试', function () {
       it('SET', function (done) {
-        redis.set('test', 'test', (err, reply) => {
-          assert.ifError(err)
+        redis.setAsync('test', '123')
+        .then((reply) => {
           assert.equal(reply, 'OK')
           done()
         })
+        .catch((err) => { done(err) })
       })
     })
   })

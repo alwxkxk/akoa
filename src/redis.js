@@ -1,25 +1,31 @@
 const redisConfig = require('../config/config.js').redisConfig
-let redis = require('redis').createClient(redisConfig)
+const redis = require('redis')
+const bluebird = require('bluebird')
 
-redis.on('error', function (err) {
+let client = redis.createClient(redisConfig)
+
+bluebird.promisifyAll(redis.RedisClient.prototype)
+bluebird.promisifyAll(redis.Multi.prototype)
+
+client.on('error', function (err) {
   console.log('Error ' + err)
 })
 
-redis.on('connect', function (err) {
+client.on('connect', function (err) {
   if (err) console.log('Error ' + err)
   console.log('redis connect.')
 })
 
-redis.on('reconnecting', function (err) {
+client.on('reconnecting', function (err) {
   if (err) console.log('Error ' + err)
   console.log('redis reconnecting.')
 })
 
-redis.on('end', function (err) {
+client.on('end', function (err) {
   if (err) console.log('Error ' + err)
   console.log('redis end.')
 })
 
 // 结束连接
-// redis.quit()
-module.exports = redis
+// client.quit()
+module.exports = client
