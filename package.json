@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/api.test.js"
+    "test": "mocha --require intelli-espower-loader --delay test/redis.test.js"
   },
   "standard": {
     "globals": [
@@ -34,7 +34,8 @@
     "koa-handle-error": "0.0.5",
     "koa-logger": "^3.1.0",
     "lodash": "^4.17.4",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
+    "redis": "^2.8.0"
   },
   "devDependencies": {
     "intelli-espower-loader": "^1.0.1",
