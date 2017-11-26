@@ -1,9 +1,10 @@
-let Router = require('koa-better-router')
-let router = Router().loadMethods()
-let body = require('koa-better-body')
-let _ = require('lodash')
-let User = require('./class/User.js')
-let uti = require('./utilities.js')
+
+const Router = require('koa-better-router')
+const router = Router().loadMethods()
+const body = require('koa-better-body')
+const _ = require('lodash')
+const User = require('./class/User.js')
+const uti = require('./utilities.js')
 const Joi = require('joi')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
@@ -17,6 +18,7 @@ router.post('/test', body(), function * (next) {
     body: this.request.body || null
   }
   console.log(data)
+  this.cookies.set('cookieTest', 'test')// 测试cookies
   this.response.type = 'json'  // 这里的this 等效于ctx
   this.response.body = uti.httpResponse(0, '测试专用接口', data)
   yield next
@@ -25,46 +27,57 @@ router.post('/test', body(), function * (next) {
 // POST /api/user 注册用户
 router.post('/user', body(), async function (ctx, next) {
   // 参数检查
-  // let ctx = this
   let post = ctx.request.fields
   ctx.response.type = 'json'
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
     password: Joi.string().min(3).max(30).required()
   })
-  const result = Joi.validate(post, schema, {abortEarly: false})
+  const result = Joi.validate(post, schema, { abortEarly: false })
 
   if (result.error) {
-    let details = {details: _.map(result.error.details, 'message')}
+    let details = { details: _.map(result.error.details, 'message') }
     ctx.response.body = uti.httpResponse(1, '注册账号失败', details)
   } else {
     await User.register(post.name, post.password)
-    .then(() => { ctx.response.body = uti.httpResponse(0, '注册账号成功') })
-    .catch((err) => { ctx.response.body = uti.httpResponse(1, '注册账号失败', {detail: err}) })
+      .then(() => { ctx.response.body = uti.httpResponse(0, '注册账号成功') })
+      .catch((err) => { ctx.response.body = uti.httpResponse(1, '注册账号失败', { detail: err }) })
   }
   return next()
 },
-function * (next) {
-  yield next
-})
+  function * (next) {
+    yield next
+  })
 
-// POST /api/session  用户登陆成功 创建新的会话
-router.post('/session', body(), function * (next) {
-  // 参数检查
-  let data = this.request.fields
+// POST /api/session  用户登陆成功 创建新的会话 返回token并设置为cookie
+router.post('/session', body(), async function (ctx, next) {
+ // 参数检查
+  let data = ctx.request.fields
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
     password: Joi.string().min(3).max(30).required()
   })
-  const result = Joi.validate(data, schema, {abortEarly: false})
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  ctx.response.type = 'json'
+
   if (result.error) {
-    let details = {details: _.map(result.error.details, 'message')}
-    this.response.body = uti.httpResponse(1, '用户登陆失败', details)
-  } else {
-  // TODO:创建token 保存到缓存 客户端自行保存到本地以作登陆凭证，按需设为header
-    this.response.body = uti.httpResponse(0, '用户登陆成功', { token: '12345678abcdefg' })
+   // 取得参数有误的所有messages
+    let details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = uti.httpResponse(1, '用户登陆失败,参数有误', details)
+    return next()
   }
-  this.response.type = 'json'
+   // 用户登陆
+  await User.login(data.name, data.password)
+    .then((token) => {
+      ctx.cookies.set('token', token)
+      ctx.response.body = uti.httpResponse(0, '用户登陆成功', {token: token})
+    })
+   .catch((err) => {
+     ctx.response.body = uti.httpResponse(1, '用户登陆失败', err)
+   })
+
+  return next()
+}, function * (next) {
   yield next
 })
 

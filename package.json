@@ -6,13 +6,10 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/redis.test.js"
+    "test": "mocha --require intelli-espower-loader --delay test/api.test.js"
   },
   "standard": {
-    "globals": [
-      "describe",
-      "it"
-    ]
+    "globals": ["describe","it","after","run"]
   },
   "nodemonConfig": {
     "ignore": [
