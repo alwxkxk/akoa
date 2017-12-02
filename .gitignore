@@ -1,3 +1,4 @@
 node_modules/
 log/
 launch.json
+config/config.js

@@ -1,18 +1,19 @@
 let config = {
   mysqlConfig: {
-    host: 'gz-cdb-jptqaaf0.sql.tencentcdb.com',
+    host: '',
     port: '63759',
-    user: 'root',
-    password: 'geeku@2017',
-    database: 'test',
+    user: '',
+    password: '',
+    database: '',
     debug: false
   },
   logConfig: {
     logDay: 1 // 日志保存天数
   },
   redisConfig: {
-    host: '119.29.61.219',
+    host: '',
     port: 6379
-  }
+  },
+  tokenExpire: 36000 // 10h,10*60*60
 }
 module.exports = config
