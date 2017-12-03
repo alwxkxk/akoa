@@ -70,9 +70,9 @@ router.post('/session', body(), async function (ctx, next) {
   }
    // 账号登陆
   await User.login(data.name, data.password)
-    .then((token) => {
-      ctx.cookies.set('token', token)
-      ctx.response.body = uti.httpResponse(0, {token: token})
+    .then((user) => {
+      ctx.cookies.set('token', user.token)
+      ctx.response.body = uti.httpResponse(0, user)
     })
    .catch((err) => {
      ctx.response.body = uti.httpResponse(2002, err)
