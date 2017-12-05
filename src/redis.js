@@ -1,5 +1,6 @@
 
 const redisConfig = require('../config/config.js').redisConfig
+const EXPIRE = require('../config/config.js').EXPIRE
 const redis = require('redis')
 const bluebird = require('bluebird')
 const uti = require('./utilities.js')
@@ -31,7 +32,7 @@ client.on('end', function (err) {
 })
 
 /**
- * 以name创建两条缓存，分别是name->token,token->user，且会将旧token删除。
+ * 以name创建两条缓存,设置生存时间，分别是name->token,token->user，且会将旧token删除。
  *
  * @param {string} name 账号名
  * @returns {Promise} 返回Promise对象，resolve values[token,reply,reply],reject err
@@ -43,8 +44,11 @@ client.setToken = async function setToken (name) {
 
   return Promise.all([
     Promise.resolve(token), // 将token传出去
-    client.hsetAsync(token, 'name', name, 'create', now),
-    client.setAsync(name, token)
+    client.hsetAsync(token, 'name', name, 'create', now)
+    .then(() => {
+      return client.expireAsync(token, EXPIRE)
+    }),
+    client.setAsync(name, token, 'EX', EXPIRE)
   ])
 }
 /**
@@ -74,8 +78,8 @@ client.tokenValidate = function tokenValidate (token) {
     return reply === 1 ? Promise.resolve('token有效') : Promise.reject('token无效')
   })
 }
-// TODO:初始化，将所有用户名保存到一个列表中
-// TODO:提供 redis检测有无用户名重名的API   nameUnique
+// TODO:初始化，将所有账号名保存到一个列表中
+// TODO:提供 redis检测有无账号名重名的API   nameUnique
 // TODO:设置缓存时间
 // 结束连接
 // client.quit()

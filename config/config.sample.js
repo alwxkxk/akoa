@@ -1,4 +1,6 @@
 let config = {
+  PORT: 80,
+  // ------- mysql ------------
   mysqlConfig: {
     host: '',
     port: '63759',
@@ -7,13 +9,16 @@ let config = {
     database: '',
     debug: false
   },
+  // ------- log ------------
   logConfig: {
     logDay: 1 // 日志保存天数
   },
+
+  // ------- reids ------------
   redisConfig: {
     host: '',
     port: 6379
   },
-  tokenExpire: 36000 // 10h,10*60*60
+  EXPIRE: 3600 // redis缓存的生存时间 1h,1*60*60
 }
 module.exports = config
