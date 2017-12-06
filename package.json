@@ -28,7 +28,6 @@
   "author": "alwxkxk",
   "license": "ISC",
   "dependencies": {
-    "@koa/cors": "^2.2.1",
     "bluebird": "^3.5.1",
     "bunyan": "^1.8.12",
     "joi": "^13.0.2",

@@ -6,13 +6,12 @@ const log = require('./log.js')
 const api = require('./api.js')
 
 const PORT = require('../config/config.js').PORT
-const cors = require('@koa/cors')
+
 const app = new Koa()
 // app.use(handleError((err) => { log.error(err) }))  // 错误处理
 
 app.use(logger())// 访问日志记录
 
-app.use(cors())  // 由于前后端分离，须支持跨域请求
 app.use(router.middleware())// 路由文件
 app.use(api.middleware())// API路由文件
 
