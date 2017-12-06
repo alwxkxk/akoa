@@ -2,6 +2,7 @@ const _ = require('lodash')
 const mysql = require('../mysql.js')
 const uti = require('../utilities.js')
 const redis = require('../redis.js')
+const GROUP = require('../../config/authentication.js').GROUP
 
 class User {
   /**
@@ -18,7 +19,7 @@ class User {
     // 前端应将password先加盐md5一次再传输到后台
     let time = uti.now()
     // 加盐后再md5一次
-    return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, uti.akoaMd5(password), name, time, time, 0])
+    return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, uti.akoaMd5(password), name, time, time, GROUP['user']])
     .then(v => { return Promise.resolve('账号注册成功') })
     .catch(e => {
       if (e.code === 'ER_DUP_ENTRY') return Promise.reject('账号名重复')
@@ -56,8 +57,10 @@ class User {
   // logout
   static logout (sessionId) {
     // 在redit里删除session
+    if (!sessionId) return Promise.reject('token为空值')
     return redis.hgetAsync(sessionId, 'name')
     .then((name) => {
+      if (!name) return Promise.reject('token已过期')
       return redis.deleteToken(name)
     })
   }

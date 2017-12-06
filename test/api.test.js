@@ -6,7 +6,6 @@ const redis = require('../src/redis.js')
 const mysql = require('../src/mysql.js')
 let api = require('../src/api.js')
 
-
 const app = new Koa()
 
 app.use(api.middleware())// API路由文件
@@ -14,7 +13,7 @@ app.use(api.middleware())// API路由文件
 setTimeout(function () {
   describe('API test', function () {
     after(function () {
-      //api 用到mysql,与redis，必须关闭才会自动结束测试脚本
+      // api 用到mysql,与redis，必须关闭才会自动结束测试脚本
       mysql.end()
       redis.quit()
     })
@@ -37,8 +36,9 @@ setTimeout(function () {
       })
     })
 
-    describe('用户相关API', function () {
-      it('POST /api/user 注册用户', function (done) {
+    describe('账号相关API', function () {
+      let token
+      it('POST /api/user 注册账号', function (done) {
         request(app.callback())
         .post('/api/user')
         .send({
@@ -53,7 +53,7 @@ setTimeout(function () {
           done()
         })
       })
-      it('POST /api/session 用户登陆', function (done) {
+      it('POST /api/session 账号登陆', function (done) {
         request(app.callback())
         .post('/api/session')
         .send({
@@ -66,10 +66,25 @@ setTimeout(function () {
           if (err) return done(err)
           // console.log(res)
           assert.equal(res.body.error_code, 0)
-          assert.ok(res.body.data.token, '响应须包含token')
+          token = res.body.data.token
+          console.log(token)
+          assert.ok(token, '响应须包含token')
           assert.ok(_.find(res.header['set-cookie'],
             function (o) { return _.startsWith(o, 'token') }),
             'set-cookie应当包含token')
+          done()
+        })
+      })
+      it('DELETE /api/session 账号退出', function (done) {
+        console.log(token)
+        request(app.callback())
+        .del('/api/session')
+        .set('token', token)
+        .expect(200)
+        .end(function (err, res) {
+          if (err) return done(err)
+          // console.log(res)
+          assert.equal(res.body.error_code, 0)
           done()
         })
       })

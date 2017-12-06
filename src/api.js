@@ -43,13 +43,13 @@ router.post('/user', body(), async function (ctx, next) {
   } else {
     await User.register(post.name, post.password)
       .then(() => { ctx.response.body = uti.httpResponse(0) })
-      .catch((err) => { ctx.response.body = uti.httpResponse(1001, { detail: err }) })
+      .catch((err) => { ctx.response.body = uti.httpResponse(1, { detail: err }) })
   }
   return next()
 },
-  function * (next) {
-    yield next
-  })
+function * (next) {
+  yield next
+})
 
 // POST /api/session  账号登陆成功 创建新的会话 返回token并设置为cookie
 router.post('/session', body(), async function (ctx, next) {
@@ -84,18 +84,26 @@ router.post('/session', body(), async function (ctx, next) {
 })
 
 // DELETE /api/session 账号退出登陆 销毁当前会话
-router.del('/session/:sessionId', body(), function * (next) {
-  // 分离并取最后的/:sessionId  一般等于token，除非是管理员手动删除 账号的会话
-  let sessionId = this.request.url.split('/').pop()
-  // 从header中提取出token。只有所属账号或管理员的token才允许删除此会话
-  let token = this.cookies.get('token') || this.request.header.token
-  console.log(token, sessionId)
+router.del('/session', body(), async function (ctx, next) {
+  // 从cookie或header中提取出token
+  let token = ctx.request.header.token || ctx.cookies.get('token')
+  ctx.response.type = 'json'
   // 从缓存中删除此token
-  this.response.body = uti.httpResponse(0)
+  await User.logout(token)
+  .then((v) => {
+    ctx.response.body = uti.httpResponse(0)
+  })
+  .catch((err) => {
+    // token 无效
+    ctx.response.body = uti.httpResponse(2003, err)
+  })
+
+  return next()
+}, function * (next) {
   yield next
 })
 
-// DELETE /user/:name 账号注销 删除数据
+// DELETE /user/:name 删除账号 暂时只能由管理员操作
 router.del('/user/:name', body(), function * (next) {
   // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
   let token = this.request.header.token
