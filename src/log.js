@@ -1,8 +1,8 @@
 
-var bunyan = require('bunyan')
-let logConfig = require('../config/config.js').logConfig
+const bunyan = require('bunyan')
+const logConfig = require('../config/config.js').logConfig
 const path = require('path')
-var log = bunyan.createLogger({
+const log = bunyan.createLogger({
   name: 'myapp',
   streams: [
     {

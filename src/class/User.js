@@ -3,6 +3,8 @@ const mysql = require('../mysql.js')
 const uti = require('../utilities.js')
 const redis = require('../redis.js')
 const GROUP = require('../../config/authentication.js').GROUP
+const bunyan = require('bunyan')
+const path = require('path')
 
 class User {
   /**
@@ -47,6 +49,7 @@ class User {
     })
     .then(values => {
       user.token = values[0]
+      userLog(name, {time: uti.now(), type: '登陆'})
       return Promise.resolve(user)// 将用户信息传出以便响应返回
     })
     .catch(e => {
@@ -61,6 +64,7 @@ class User {
     return redis.hgetAsync(sessionId, 'name')
     .then((name) => {
       if (!name) return Promise.reject('token已过期')
+      userLog(name, {time: uti.now(), type: '退出登陆'})
       return redis.deleteToken(name)
     })
   }
@@ -68,6 +72,27 @@ class User {
   // 修改密码
   // 修改昵称
   // 邮箱验证
+}
+
+  /**
+   * 用户专用 日志记录
+   *
+   * @param {string} name 用户名
+   * @param {any} data 所要记录的数据
+   * @param {string} [level='info'] 日志等级 fatal,error,warn,info,debug,trace
+   */
+function userLog (name, data, level = 'info') {
+  if (['fatal', 'error', 'warn', 'info', 'debug', 'trace'].indexOf(level) === -1) {
+    throw new Error('level should be one of fatal,error,warn,info,debug,trace.but it is ' + level + '.')
+  }
+  const log = bunyan.createLogger({
+    name: name,
+    streams: [{
+      path: path.resolve(__dirname, '../../log/user/' + name + '.log')
+    }]
+  })
+
+  log[level](data)
 }
 
 module.exports = User
