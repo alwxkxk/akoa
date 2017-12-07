@@ -51,8 +51,8 @@ function * (next) {
   yield next
 })
 
-// POST /api/session  账号登陆成功 创建新的会话 返回token并设置为cookie
-router.post('/session', body(), async function (ctx, next) {
+// POST /api/token  账号登陆成功 创建新的会话 返回token并设置为cookie
+router.post('/token', body(), async function (ctx, next) {
  // 参数检查
   let data = ctx.request.fields
   const schema = Joi.object().keys({
@@ -83,10 +83,15 @@ router.post('/session', body(), async function (ctx, next) {
   yield next
 })
 
-// DELETE /api/session 账号退出登陆 销毁当前会话
-router.del('/session', body(), async function (ctx, next) {
+// DELETE /api/token 账号退出登陆 销毁当前会话
+router.del('/token', body(), async function (ctx, next) {
   // 从cookie或header中提取出token
   let token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = uti.httpResponse(2003)// token无效
+    return next()
+  }
+  // console.log(ctx.request.header.token, ctx.cookies.get('token'))
   ctx.response.type = 'json'
   // 从缓存中删除此token
   await User.logout(token)
@@ -112,6 +117,26 @@ router.del('/user/:name', body(), function * (next) {
   this.response.body = uti.httpResponse(0)
   yield next
 })
+// GET /api/log  取得用户日志
+router.get('/log', body(), async function (ctx, next) {
+  let token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = uti.httpResponse(2003)// token无效
+    return next()
+  }
+  ctx.response.type = 'json'
+  await User.getUserLog(token)
+  .then(logList => {
+    ctx.response.body = uti.httpResponse(0, logList)
+  })
+  .catch(e => {
+    ctx.response.body = uti.httpResponse(1, e)
+  })
 
+  return next()
+},
+function * (next) {
+  yield next
+})
 api.extend(router)
 module.exports = api

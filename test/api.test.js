@@ -53,9 +53,9 @@ setTimeout(function () {
           done()
         })
       })
-      it('POST /api/session 账号登陆', function (done) {
+      it('POST /api/token 账号登陆', function (done) {
         request(app.callback())
-        .post('/api/session')
+        .post('/api/token')
         .send({
           'name': 'abcd',
           'password': '123456abcd'
@@ -75,10 +75,10 @@ setTimeout(function () {
           done()
         })
       })
-      it('DELETE /api/session 账号退出', function (done) {
+      it('DELETE /api/token 账号退出', function (done) {
         console.log(token)
         request(app.callback())
-        .del('/api/session')
+        .del('/api/token')
         .set('token', token)
         .expect(200)
         .end(function (err, res) {

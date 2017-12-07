@@ -78,6 +78,17 @@ client.tokenValidate = function tokenValidate (token) {
     return reply === 1 ? Promise.resolve('token有效') : Promise.reject('token无效')
   })
 }
+
+/**
+ * 通过token取得name
+ *
+ * @param {string} token
+ * @returns {Promise} resolve name
+ */
+client.getNameByToken = function getNameByToken (token) {
+  return client.hgetAsync(token, 'name')
+}
+
 // TODO:初始化，将所有账号名保存到一个列表中
 // TODO:提供 redis检测有无账号名重名的API   nameUnique
 // TODO:设置缓存时间
