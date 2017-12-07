@@ -1,4 +1,5 @@
 node_modules/
-log/
+log/*.log*
+log/user/*.log*
 launch.json
 config/config.js
