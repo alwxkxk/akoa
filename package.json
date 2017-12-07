@@ -38,6 +38,7 @@
     "koa-logger": "^3.1.0",
     "lodash": "^4.17.4",
     "mysql": "^2.15.0",
+    "nodemailer": "^4.4.0",
     "redis": "^2.8.0"
   },
   "devDependencies": {
