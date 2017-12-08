@@ -51,7 +51,7 @@ class User {
     })
     .then(values => {
       user.token = values[0]
-      userLog(name, {time: uti.now(), type: '登陆'})
+      userLog(name, {time: uti.now(), action: '登陆'})
       return Promise.resolve(user)// 将用户信息传出以便响应返回
     })
     .catch(e => {
@@ -72,7 +72,7 @@ class User {
     return redis.getNameByToken(token, 'name')
     .then((name) => {
       if (!name) return Promise.reject('token已过期')
-      userLog(name, {time: uti.now(), type: '退出登陆'})
+      userLog(name, {time: uti.now(), action: '退出登陆'})
       return redis.deleteToken(name)
     })
   }
@@ -98,7 +98,7 @@ class User {
 
         rl.on('line', (line) => {
           let obj = JSON.parse(line)
-          logList.push({time: obj.time, type: obj.type})
+          logList.push({time: obj.time, action: obj.action})
         })
         rl.on('close', () => {
           resolve(logList)
@@ -106,7 +106,48 @@ class User {
       })
     })
   }
-  // 修改密码
+
+  /**
+   * 验证当前用户密码，返回sensitiveToken
+   *
+   * @static
+   * @param {string} token 用户凭证
+   * @param {string} password 密码
+   * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
+   * @memberof User
+   */
+  static comfirmPassword (token, password) {
+    return redis.getNameByToken(token, 'name')
+    .then((name) => {
+      return mysql.read('user', ['name'], ['name', name, 'password', uti.akoaMd5(password)])
+    })
+    .then((reads) => {
+      let name = reads[0].name // DEBUG
+      if (reads.length === 0) return Promise.reject('密码错误')
+      else return redis.setSensitiveToken(name)
+    })
+  }
+
+  /**
+   * 修改密码
+   *
+   * @static
+   * @param {string} token 用户凭证
+   * @param {string} sensitiveToken 敏感操作凭证
+   * @param {string} newPassword 新密码
+   * @returns {Promise} reject `${sensitiveToken}`
+   * @memberof User
+   */
+  static changePassword (token, sensitiveToken, newPassword) {
+    // TODO : token与sensitiveToken 的name对比
+    return redis.getNameBySensitiveToken(sensitiveToken, 'name')
+    .then((name) => {
+      return mysql.updated('user', ['password', newPassword], ['name', name])
+    })
+    .then(v => {
+      return Promise('成功修改密码')
+    })
+  }
   // 修改昵称
   // 邮箱验证
 }

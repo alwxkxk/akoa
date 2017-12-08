@@ -51,6 +51,19 @@ client.setToken = async function setToken (name) {
     client.setAsync(name, token, 'EX', EXPIRE)
   ])
 }
+
+/**
+ * 以name创建sensitiveToken
+ *
+ * @param {string} name 账号名
+ * @returns {Promise} 返回Promise对象，resolve ${sensitiveToken},reject err
+ */
+client.setSensitiveToken = function setSensitiveToken (name) {
+  let now = uti.now()
+  let setSensitiveToken = md5(name + now)
+  return client.setAsync(setSensitiveToken, name, 'EX', 30 * 60) // 有效时间为30分钟
+  .then(reply => { return Promise.resolve(setSensitiveToken) }) // 将setSensitiveToken传出去})
+}
 /**
  * 删除name及其对应的token两个缓存
  *
@@ -87,6 +100,16 @@ client.tokenValidate = function tokenValidate (token) {
  */
 client.getNameByToken = function getNameByToken (token) {
   return client.hgetAsync(token, 'name')
+}
+
+/**
+ * 通过SensitiveToken取得name
+ *
+ * @param {string} sensitiveToken
+ * @returns {Promise} resolve name
+ */
+client.getNameBySensitiveToken = function getNameBySensitiveToken (sensitiveToken) {
+  return client.getAsync(sensitiveToken)
 }
 
 // TODO:初始化，将所有账号名保存到一个列表中

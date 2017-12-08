@@ -8,9 +8,12 @@ const uti = require('./utilities.js')
 const Joi = require('joi')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
-
+let setAll = function setAll (ctx, next) {
+  ctx.response.type = 'json'// 将所有/api路由设置为json响应
+  return next()
+}
 // POST /api/test 测试专用API 返回请求的所有信息
-router.post('/test', body(), function * (next) {
+router.post('/test', body(), setAll, function * (next) {
   let data = {
     request: this.request || null,
     fields: this.request.fields || null,
@@ -27,10 +30,10 @@ router.post('/test', body(), function * (next) {
 })
 
 // POST /api/user 注册账号
-router.post('/user', body(), async function (ctx, next) {
+router.post('/user', body(), setAll, async function (ctx, next) {
   // 参数检查
   let post = ctx.request.fields
-  ctx.response.type = 'json'
+
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
     password: Joi.string().min(3).max(30).required()
@@ -52,7 +55,7 @@ function * (next) {
 })
 
 // POST /api/token  账号登陆成功 创建新的会话 返回token并设置为cookie
-router.post('/token', body(), async function (ctx, next) {
+router.post('/token', body(), setAll, async function (ctx, next) {
  // 参数检查
   let data = ctx.request.fields
   const schema = Joi.object().keys({
@@ -60,7 +63,6 @@ router.post('/token', body(), async function (ctx, next) {
     password: Joi.string().min(3).max(30).required()
   })
   const result = Joi.validate(data, schema, { abortEarly: false })
-  ctx.response.type = 'json'
 
   if (result.error) {
    // 取得参数有误的所有messages
@@ -84,7 +86,7 @@ router.post('/token', body(), async function (ctx, next) {
 })
 
 // DELETE /api/token 账号退出登陆 销毁当前会话
-router.del('/token', body(), async function (ctx, next) {
+router.del('/token', body(), setAll, async function (ctx, next) {
   // 从cookie或header中提取出token
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -92,7 +94,7 @@ router.del('/token', body(), async function (ctx, next) {
     return next()
   }
   // console.log(ctx.request.header.token, ctx.cookies.get('token'))
-  ctx.response.type = 'json'
+
   // 从缓存中删除此token
   await User.logout(token)
   .then((v) => {
@@ -108,8 +110,8 @@ router.del('/token', body(), async function (ctx, next) {
   yield next
 })
 
-// DELETE /user/:name 删除账号 暂时只能由管理员操作
-router.del('/user/:name', body(), function * (next) {
+// DELETE /user 删除账号 暂时只能由管理员操作
+router.del('/user', body(), setAll, function * (next) {
   // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
   let token = this.request.header.token
   let name = this.request.url.split('/').pop()// 分离并取最后的/:id
@@ -117,14 +119,15 @@ router.del('/user/:name', body(), function * (next) {
   this.response.body = uti.httpResponse(0)
   yield next
 })
+
 // GET /api/log  取得用户日志
-router.get('/log', body(), async function (ctx, next) {
+router.get('/log', body(), setAll, async function (ctx, next) {
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
     ctx.response.body = uti.httpResponse(2003)// token无效
     return next()
   }
-  ctx.response.type = 'json'
+
   await User.getUserLog(token)
   .then(logList => {
     ctx.response.body = uti.httpResponse(0, logList)
@@ -138,5 +141,33 @@ router.get('/log', body(), async function (ctx, next) {
 function * (next) {
   yield next
 })
+
+// POST /api/sensitiveToken 通过重输密码 取得敏感操作token
+router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
+  let token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = uti.httpResponse(2003)// token无效
+    return next()
+  }
+  let data = ctx.request.fields
+  const schema = Joi.object().keys({
+    password: Joi.string().min(3).max(30).required()
+  })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    let details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = uti.httpResponse(1001, details)
+    return next()
+  }
+
+  await User.comfirmPassword(token, data.password)
+  .then(sensitiveToken => { ctx.response.body = uti.httpResponse(0, {sensitiveToken: sensitiveToken}) })
+  .catch(err => { ctx.response.body = uti.httpResponse(1, err) })
+},
+function * (next) {
+  yield next
+})
+
 api.extend(router)
 module.exports = api
