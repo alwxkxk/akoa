@@ -98,7 +98,7 @@ class User {
 
         rl.on('line', (line) => {
           let obj = JSON.parse(line)
-          logList.push({time: obj.time, action: obj.action})
+          logList.unshift({time: obj.time, action: obj.action})
         })
         rl.on('close', () => {
           resolve(logList)
