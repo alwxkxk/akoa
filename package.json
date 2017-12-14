@@ -28,6 +28,7 @@
   "author": "alwxkxk",
   "license": "ISC",
   "dependencies": {
+    "async-busboy": "^0.6.2",
     "bluebird": "^3.5.1",
     "bunyan": "^1.8.12",
     "joi": "^13.0.2",
@@ -39,7 +40,8 @@
     "lodash": "^4.17.4",
     "mysql": "^2.15.0",
     "nodemailer": "^4.4.0",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "intelli-espower-loader": "^1.0.1",

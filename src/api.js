@@ -6,6 +6,10 @@ const _ = require('lodash')
 const User = require('./class/User.js')
 const uti = require('./utilities.js')
 const Joi = require('joi')
+const asyncBusboy = require('async-busboy')
+const config = require('../config/config.js')
+const path = require('path')
+const fs = require('fs')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 let setAll = function setAll (ctx, next) {
@@ -20,6 +24,7 @@ router.post('/test', body(), setAll, function * (next) {
     files: this.request.files || null,
     body: this.request.body || null
   }
+
   // console.log(data)
   // this.cookies.set('cookieTest', 'test')// 测试cookies
   console.log(this.cookies.get('token'))
@@ -166,6 +171,37 @@ router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
   .catch(err => { ctx.response.body = uti.httpResponse(1, err) })
 },
 function * (next) {
+  yield next
+})
+
+// post /api/avatar 更改用户头像
+// router.post()
+
+// ------------------- 非用户直接相关的API----------------------------
+// POST /api/image 上传一张图片
+router.post('/image', setAll, async function (ctx, next) {
+  // 特别地 不要koa-better-body来解析，否则busboy无法正常解析
+  const { files } = await asyncBusboy(ctx.req)
+  if (files[0]) {
+    const image = files[0]
+    const suffix = path.extname(image.filename)
+    if (config.ImageType.indexOf(suffix) === -1) {
+      // 图片格式错误
+      ctx.response.body = uti.httpResponse(1003)
+      return next()
+    }
+    const imageName = uti.uuid() + suffix
+    const saveTo = path.join(config.ImagePath, imageName)
+    // 取得文件后缀名 格式检查 用uuid创建新文件
+    image.pipe(fs.createWriteStream(saveTo))
+    // 返回图片路径
+    ctx.response.body = uti.httpResponse(0, {imageName: imageName})
+    return next()
+  } else {
+    ctx.response.body = uti.httpResponse(1003)
+    return next()
+  }
+}, function * (next) {
   yield next
 })
 
