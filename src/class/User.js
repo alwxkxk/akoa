@@ -21,7 +21,7 @@ class User {
   static register (name, password) {
     // TODO:优化：前端应提供 先检测有无重名的
     // 前端应将password先加盐md5一次再传输到后台
-    let time = uti.now()
+    const time = uti.now()
     // 加盐后再md5一次
     return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, uti.akoaMd5(password), name, time, time, GROUP['user']])
     .then(v => { return Promise.resolve('账号注册成功') })
@@ -42,7 +42,7 @@ class User {
    */
   static login (name, password) {
     let user
-    let need = ['name', 'nick_name', 'email', 'group_id', 'icon_url']
+    let need = ['name', 'nick_name', 'email', 'group_id', 'avatar']
     return mysql.read('user', need, ['name', name, 'password', uti.akoaMd5(password)])
     .then(reads => {
       if (reads.length === 0) return Promise.reject('账号不存在或密码错误')
@@ -50,6 +50,8 @@ class User {
       return redis.setToken(reads[0].name)// TODO:还要设置有效时间
     })
     .then(values => {
+      const time = uti.now()
+      mysql.updated('user', ['last_time', time], ['name', name]) // 更新最后活跃时间
       user.token = values[0]
       userLog(name, {time: uti.now(), action: '登陆'})
       return Promise.resolve(user)// 将用户信息传出以便响应返回
@@ -146,6 +148,25 @@ class User {
     })
     .then(v => {
       return Promise('成功修改密码')
+    })
+  }
+
+  /**
+   * 修改头像
+   *
+   * @static
+   * @param {string} token 用户凭证
+   * @param {string} imageName 图片文件名
+   * @returns {Promise}
+   * @memberof User
+   */
+  static changeAvatar (token, imageName) {
+    return redis.getNameByToken(token, 'name')
+    .then((name) => {
+      return mysql.updated('user', ['avatar', imageName], ['name', name])
+    })
+    .then(v => {
+      return Promise.resolve('成功修改头像')
     })
   }
   // 修改昵称

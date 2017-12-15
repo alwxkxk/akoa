@@ -169,13 +169,39 @@ router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
   await User.comfirmPassword(token, data.password)
   .then(sensitiveToken => { ctx.response.body = uti.httpResponse(0, {sensitiveToken: sensitiveToken}) })
   .catch(err => { ctx.response.body = uti.httpResponse(1, err) })
+  return next()
 },
 function * (next) {
   yield next
 })
 
 // post /api/avatar 更改用户头像
-// router.post()
+router.post('avatar', body(), setAll, async function (ctx, next) {
+  let token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = uti.httpResponse(2003)// token无效
+    return next()
+  }
+  let data = ctx.request.fields
+  const schema = Joi.object().keys({
+    imageName: Joi.string().required()
+  })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    let details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = uti.httpResponse(1001, details)
+    return next()
+  }
+
+  await User.changeAvatar(token, data.imageName)
+  .then((v) => { ctx.response.body = uti.httpResponse(0) })
+  .catch((err) => { ctx.response.body = uti.httpResponse(1, err) })
+  return next()
+}
+, function * (next) {
+  yield next
+})
 
 // ------------------- 非用户直接相关的API----------------------------
 // POST /api/image 上传一张图片
