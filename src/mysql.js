@@ -1,15 +1,16 @@
-var mysql = require('mysql')
-let _ = require('lodash')
-let mysqlConfig = require('../config/config.js').mysqlConfig
-let sqlQuery = require('../config/sql-query.js')
+const mysql = require('mysql')
+const _ = require('lodash')
+const mysqlConfig = require('../config/config.js').mysqlConfig
+const sqlQuery = require('../config/sql-query.js')
 
 var pool = mysql.createPool(mysqlConfig)
+initTable()
 // pool.on('acquire', function (connection) {
 //   console.log('Connection %d acquired', connection.threadId)
 // })
-// pool.on('connection', function (connection) {
-//   console.log('Connection %d built', connection.threadId)
-// })
+pool.on('connection', function (connection) {
+  console.log('Connection %d built', connection.threadId)
+})
 // pool.on('enqueue', function () {
 //   console.log('Waiting for available connection slot')
 // })
@@ -19,7 +20,7 @@ var pool = mysql.createPool(mysqlConfig)
 
 /**
  * 执行sql语句，返回Promise对象
- * 注意，此函数没有转义，只允许内部使用，不能接收用户的sql语句以防注入攻击。
+ * 注意，此函数没有转义，只允许内部使用，不能接收账号的sql语句以防注入攻击。
  * @param {string} queryString 来自内容的SQL语句
  * @returns {Promise} 返回Promise对象，resolve results,reject err
  */
@@ -159,7 +160,7 @@ async function initTable () {
   let tablesConfig = {
     'user': sqlQuery.createUserTable // 没有user 表就使用createUserTable 创建
   }
-  // TODO:检测数据库有没有表，没有就初始化，创建一堆表。
+  // 检测数据库有没有表，没有就初始化，创建一堆表。
   let sqlString = mysql.format('SELECT * FROM information_schema.tables WHERE table_schema=?;', [mysqlConfig.database])
   // 先取得所有表名
   let tables = _.map(await query(sqlString), function (o) { return o.TABLE_NAME })
@@ -167,6 +168,7 @@ async function initTable () {
   let lackTable = _.difference(_.keys(tablesConfig), tables)
   // 创建所缺乏的表
   _.forEach(lackTable, function (value) {
+    console.log('create Table' + value)
     query(tablesConfig[value])
       .then(() => { console.log('create table:', value) })
       .catch(err => { console.log(err) })
