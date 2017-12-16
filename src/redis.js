@@ -44,7 +44,7 @@ client.setToken = async function setToken (user) {
   let userArray = []
   for (const prop in user) {
     userArray.push(prop)
-    userArray.push(user[prop])
+    user[prop] ? userArray.push(user[prop]) : userArray.push('')// 将null值手动转换为''以免redis报错
   }
 
   await client.deleteToken(user.name)// 将旧的token删除
