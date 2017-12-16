@@ -2,8 +2,9 @@ const md5 = require('md5')
 const moment = require('moment')
 const _ = require('lodash')
 const errorCodeList = require('../config/error-code.js')
+const uuidv4 = require('uuid/v4')
 
-let utilities = {
+let common = {
   /**
    * 加后缀再md5
    *
@@ -39,7 +40,16 @@ let utilities = {
       message: errorCodeList['' + errorCode][0] || '未知错误代码',
       data: data || {}
     })
+  },
+
+  /**
+   * 返回uuid
+   *
+   * @returns uuid
+   */
+  uuid () {
+    return uuidv4()
   }
 }
 
-module.exports = utilities
+module.exports = common
