@@ -117,14 +117,14 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 })
 
 // DELETE /user 删除账号 暂时只能由管理员操作
-router.del('/user', body(), setAll, function * (next) {
-  // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
-  let token = this.request.header.token
-  let name = this.request.url.split('/').pop()// 分离并取最后的/:id
-  // TODO:敏感操作，应该弹窗提示 是否确认这样做 或许甚至理当输入密码才能做。
-  this.response.body = common.httpResponse(0)
-  yield next
-})
+// router.del('/user', body(), setAll, function * (next) {
+//   // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
+//   let token = this.request.header.token
+//   let name = this.request.url.split('/').pop()// 分离并取最后的/:id
+//   // TODO:敏感操作，应该弹窗提示 是否确认这样做 或许甚至理当输入密码才能做。
+//   this.response.body = common.httpResponse(0)
+//   yield next
+// })
 
 // GET /api/log  取得用户日志
 router.get('/log', body(), setAll, async function (ctx, next) {

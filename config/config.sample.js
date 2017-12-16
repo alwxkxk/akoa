@@ -1,5 +1,7 @@
 let config = {
   PORT: 80,
+  ImagePath: '',
+  ImageType: ['.jpg', '.png'],
   // ------- mysql ------------
   mysqlConfig: {
     host: '',
@@ -17,7 +19,8 @@ let config = {
   // ------- reids ------------
   redisConfig: {
     host: '',
-    port: 6379
+    port: 6379,
+    password: null
   },
   EXPIRE: 3600, // redis缓存的生存时间 1h,1*60*60
     // ------ email ---------
