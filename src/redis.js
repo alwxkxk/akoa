@@ -3,7 +3,7 @@ const redisConfig = require('../config/config.js').redisConfig
 const EXPIRE = require('../config/config.js').EXPIRE
 const redis = require('redis')
 const bluebird = require('bluebird')
-const uti = require('./utilities.js')
+const common = require('./common.js')
 const md5 = require('md5')
 
 let client = redis.createClient(redisConfig)
@@ -34,21 +34,27 @@ client.on('end', function (err) {
 /**
  * 以name创建两条缓存,设置生存时间，分别是name->token,token->user，且会将旧token删除。
  *
- * @param {string} name 账号名
+ * @param {string} user 账号数据
  * @returns {Promise} 返回Promise对象，resolve values[token,reply,reply],reject err
  */
-client.setToken = async function setToken (name) {
-  let now = uti.now()
-  let token = md5(name + now)
-  await client.deleteToken(name)// 将旧的token删除
+client.setToken = async function setToken (user) {
+  let now = common.now()
+  let token = md5(user.name + now)
+   // 将 user对象里的键值按序插入数组 [key1,value1,key2,value2...]
+  let userArray = []
+  for (const prop in user) {
+    userArray.push(prop)
+    userArray.push(user[prop])
+  }
 
+  await client.deleteToken(user.name)// 将旧的token删除
   return Promise.all([
     Promise.resolve(token), // 将token传出去
-    client.hsetAsync(token, 'name', name, 'create', now)
+    client.hsetAsync(token, ...userArray)// 扩展符...
     .then(() => {
       return client.expireAsync(token, EXPIRE)
     }),
-    client.setAsync(name, token, 'EX', EXPIRE)
+    client.setAsync(user.name, token, 'EX', EXPIRE)
   ])
 }
 
@@ -59,7 +65,7 @@ client.setToken = async function setToken (name) {
  * @returns {Promise} 返回Promise对象，resolve ${sensitiveToken},reject err
  */
 client.setSensitiveToken = function setSensitiveToken (name) {
-  let now = uti.now()
+  let now = common.now()
   let setSensitiveToken = md5(name + now)
   return client.setAsync(setSensitiveToken, name, 'EX', 30 * 60) // 有效时间为30分钟
   .then(reply => { return Promise.resolve(setSensitiveToken) }) // 将setSensitiveToken传出去})
@@ -114,7 +120,6 @@ client.getNameBySensitiveToken = function getNameBySensitiveToken (sensitiveToke
 
 // TODO:初始化，将所有账号名保存到一个列表中
 // TODO:提供 redis检测有无账号名重名的API   nameUnique
-// TODO:设置缓存时间
 // 结束连接
 // client.quit()
 module.exports = client
