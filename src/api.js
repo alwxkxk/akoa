@@ -10,6 +10,7 @@ const asyncBusboy = require('async-busboy')
 const config = require('../config/config.js')
 const path = require('path')
 const fs = require('fs')
+const util = require('util')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 let setAll = function setAll (ctx, next) {
@@ -234,9 +235,13 @@ router.post('/image', setAll, async function (ctx, next) {
 // GET /api/image/:imageName 取得一张图片
 // NOTE: 一般使用nginx直接指向images文件目录并开启缓存 效果更好。
 router.get('/image/:imageName', setAll, async function (ctx, next) {
-
-  // ctx.response.body=
-
+  const imageName = ctx.params.imageName
+  // console.log(ctx.params.imageName)
+  const readFile = util.promisify(fs.readFile)
+  const image = await readFile(path.join(config.ImagePath, imageName))
+  ctx.response.body = image
+  ctx.response.type = 'image/' + path.extname(imageName).substr(1)
+  return next()
 }, function * (next) {
   yield next
 })
