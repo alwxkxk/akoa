@@ -63,6 +63,7 @@ function * (next) {
 
 // POST /api/token  账号登陆成功 创建新的会话 返回token并设置为cookie
 // request body : {name:'',password:''}
+// response 成功的返回数据 包含用户信息user:{...}
 router.post('/token', body(), setAll, async function (ctx, next) {
  // 参数检查
   let data = ctx.request.fields
@@ -131,6 +132,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 
 // GET /api/log  取得用户日志
 // request header or cookie 'token'
+// response 成功的返回数据 包含日志列表logList:[...]
 router.get('/log', body(), setAll, async function (ctx, next) {
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -154,6 +156,7 @@ function * (next) {
 
 // POST /api/sensitiveToken 通过重输密码 取得敏感操作token
 // request header or cookie 'token',body:{password:''}
+// response 成功的返回数据 包含敏感token sensitiveToken:...
 router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -183,6 +186,7 @@ function * (next) {
 
 // post /api/avatar 更改用户头像
 // request header or cookie 'token',body: form-data:image file
+// response 成功的返回数据 包含图片名称 imageName:...
 router.post('/avatar', setAll, async function (ctx, next) {
   const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -202,10 +206,10 @@ router.post('/avatar', setAll, async function (ctx, next) {
     const saveTo = path.join(config.ImagePath, imageName)
     // 取得文件后缀名 格式检查 用uuid创建新文件
     image.pipe(fs.createWriteStream(saveTo))
-    // 返回图片路径
+    // 返回图片名
     await User.changeAvatar(token, imageName)
     .then((v) => {
-      ctx.response.body = common.httpResponse(0)
+      ctx.response.body = common.httpResponse(0, {imageName: imageName})
       return next()
     })
     .catch((err) => {
@@ -223,6 +227,7 @@ router.post('/avatar', setAll, async function (ctx, next) {
 // ------------------- 非用户直接相关的API----------------------------
 // POST /api/image 上传一张图片
 // request body: form-data:image file
+// response 成功的返回数据 包含图片名称 imageName:...
 router.post('/image', setAll, async function (ctx, next) {
   // 特别地 不要koa-better-body来解析，否则busboy无法正常解析
   const { files } = await asyncBusboy(ctx.req)
@@ -251,6 +256,7 @@ router.post('/image', setAll, async function (ctx, next) {
 
 // GET /api/image/:imageName 取得一张图片
 // NOTE: 一般使用nginx直接指向images文件目录并开启缓存 效果更好。
+// response 成功的返回数据 包含图片
 router.get('/image/:imageName', setAll, async function (ctx, next) {
   const imageName = ctx.params.imageName
   // console.log(ctx.params.imageName)
