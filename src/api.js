@@ -36,6 +36,7 @@ router.post('/test', body(), setAll, function * (next) {
 })
 
 // POST /api/user 注册账号
+// request body : {name:'',password:''}
 router.post('/user', body(), setAll, async function (ctx, next) {
   // 参数检查
   let post = ctx.request.fields
@@ -61,6 +62,7 @@ function * (next) {
 })
 
 // POST /api/token  账号登陆成功 创建新的会话 返回token并设置为cookie
+// request body : {name:'',password:''}
 router.post('/token', body(), setAll, async function (ctx, next) {
  // 参数检查
   let data = ctx.request.fields
@@ -92,6 +94,7 @@ router.post('/token', body(), setAll, async function (ctx, next) {
 })
 
 // DELETE /api/token 账号退出登陆 销毁当前会话
+// request header or cookie 'token'
 router.del('/token', body(), setAll, async function (ctx, next) {
   // 从cookie或header中提取出token
   let token = ctx.request.header.token || ctx.cookies.get('token')
@@ -127,6 +130,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 // })
 
 // GET /api/log  取得用户日志
+// request header or cookie 'token'
 router.get('/log', body(), setAll, async function (ctx, next) {
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -149,6 +153,7 @@ function * (next) {
 })
 
 // POST /api/sensitiveToken 通过重输密码 取得敏感操作token
+// request header or cookie 'token',body:{password:''}
 router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
   let token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -177,6 +182,7 @@ function * (next) {
 })
 
 // post /api/avatar 更改用户头像
+// request header or cookie 'token',body: form-data:image file
 router.post('/avatar', setAll, async function (ctx, next) {
   const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
@@ -216,6 +222,7 @@ router.post('/avatar', setAll, async function (ctx, next) {
 
 // ------------------- 非用户直接相关的API----------------------------
 // POST /api/image 上传一张图片
+// request body: form-data:image file
 router.post('/image', setAll, async function (ctx, next) {
   // 特别地 不要koa-better-body来解析，否则busboy无法正常解析
   const { files } = await asyncBusboy(ctx.req)
