@@ -177,30 +177,40 @@ function * (next) {
 })
 
 // post /api/avatar 更改用户头像
-router.post('avatar', body(), setAll, async function (ctx, next) {
-  let token = ctx.request.header.token || ctx.cookies.get('token')
+router.post('/avatar', setAll, async function (ctx, next) {
+  const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
     ctx.response.body = common.httpResponse(2003)// token无效
     return next()
   }
-  let data = ctx.request.fields
-  const schema = Joi.object().keys({
-    imageName: Joi.string().required()
-  })
-  const result = Joi.validate(data, schema, { abortEarly: false })
-  if (result.error) {
-    // 取得参数有误的所有messages
-    let details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+  const { files } = await asyncBusboy(ctx.req)
+  if (files[0]) {
+    const image = files[0]
+    const suffix = path.extname(image.filename)
+    if (config.ImageType.indexOf(suffix) === -1) {
+      // 图片格式错误
+      ctx.response.body = common.httpResponse(1003)
+      return next()
+    }
+    const imageName = common.uuid() + suffix
+    const saveTo = path.join(config.ImagePath, imageName)
+    // 取得文件后缀名 格式检查 用uuid创建新文件
+    image.pipe(fs.createWriteStream(saveTo))
+    // 返回图片路径
+    await User.changeAvatar(token, imageName)
+    .then((v) => {
+      ctx.response.body = common.httpResponse(0)
+      return next()
+    })
+    .catch((err) => {
+      ctx.response.body = common.httpResponse(1, err)
+      return next()
+    })
+  } else {
+    ctx.response.body = common.httpResponse(1003)
     return next()
   }
-
-  await User.changeAvatar(token, data.imageName)
-  .then((v) => { ctx.response.body = common.httpResponse(0) })
-  .catch((err) => { ctx.response.body = common.httpResponse(1, err) })
-  return next()
-}
-, function * (next) {
+}, function * (next) {
   yield next
 })
 
