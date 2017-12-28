@@ -13,13 +13,13 @@ const fs = require('fs')
 const util = require('util')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
-let setAll = function setAll (ctx, next) {
+const setAll = function setAll (ctx, next) {
   ctx.response.type = 'json'// 将所有/api路由设置为json响应
   return next()
 }
 // POST /api/test 测试专用API 返回请求的所有信息
 router.post('/test', body(), setAll, function * (next) {
-  let data = {
+  const data = {
     request: this.request || null,
     fields: this.request.fields || null,
     files: this.request.files || null,
@@ -39,7 +39,7 @@ router.post('/test', body(), setAll, function * (next) {
 // request body : {name:'',password:''}
 router.post('/user', body(), setAll, async function (ctx, next) {
   // 参数检查
-  let post = ctx.request.fields
+  const post = ctx.request.fields
 
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
@@ -48,7 +48,7 @@ router.post('/user', body(), setAll, async function (ctx, next) {
   const result = Joi.validate(post, schema, { abortEarly: false })
 
   if (result.error) {
-    let details = { details: _.map(result.error.details, 'message') }
+    const details = { details: _.map(result.error.details, 'message') }
     ctx.response.body = common.httpResponse(1001, details)
   } else {
     await User.register(post.name, post.password)
@@ -66,7 +66,7 @@ function * (next) {
 // response 成功的返回数据 包含用户信息user:{...}
 router.post('/token', body(), setAll, async function (ctx, next) {
  // 参数检查
-  let data = ctx.request.fields
+  const data = ctx.request.fields
   const schema = Joi.object().keys({
     name: Joi.string().min(3).max(30).required(),
     password: Joi.string().min(3).max(30).required()
@@ -75,7 +75,7 @@ router.post('/token', body(), setAll, async function (ctx, next) {
 
   if (result.error) {
    // 取得参数有误的所有messages
-    let details = { details: _.map(result.error.details, 'message') }
+    const details = { details: _.map(result.error.details, 'message') }
     ctx.response.body = common.httpResponse(1001, details)
     return next()
   }
@@ -98,7 +98,7 @@ router.post('/token', body(), setAll, async function (ctx, next) {
 // request header or cookie 'token'
 router.del('/token', body(), setAll, async function (ctx, next) {
   // 从cookie或header中提取出token
-  let token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
     ctx.response.body = common.httpResponse(2003)// token无效
     return next()
@@ -123,7 +123,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 // DELETE /user 删除账号 暂时只能由管理员操作
 // router.del('/user', body(), setAll, function * (next) {
 //   // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
-//   let token = this.request.header.token
+//   const token = this.request.header.token
 //   let name = this.request.url.split('/').pop()// 分离并取最后的/:id
 //   // TODO:敏感操作，应该弹窗提示 是否确认这样做 或许甚至理当输入密码才能做。
 //   this.response.body = common.httpResponse(0)
@@ -134,7 +134,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 // request header or cookie 'token'
 // response 成功的返回数据 包含日志列表logList:[...]
 router.get('/log', body(), setAll, async function (ctx, next) {
-  let token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
     ctx.response.body = common.httpResponse(2003)// token无效
     return next()
@@ -158,25 +158,55 @@ function * (next) {
 // request header or cookie 'token',body:{password:''}
 // response 成功的返回数据 包含敏感token sensitiveToken:...
 router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
-  let token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.request.header.token || ctx.cookies.get('token')
   if (!token) {
     ctx.response.body = common.httpResponse(2003)// token无效
     return next()
   }
-  let data = ctx.request.fields
+  const data = ctx.request.fields
   const schema = Joi.object().keys({
     password: Joi.string().min(3).max(30).required()
   })
   const result = Joi.validate(data, schema, { abortEarly: false })
   if (result.error) {
     // 取得参数有误的所有messages
-    let details = { details: _.map(result.error.details, 'message') }
+    const details = { details: _.map(result.error.details, 'message') }
     ctx.response.body = common.httpResponse(1001, details)
     return next()
   }
 
   await User.comfirmPassword(token, data.password)
   .then(sensitiveToken => { ctx.response.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
+  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  return next()
+},
+function * (next) {
+  yield next
+})
+
+// POST /api/password 修改用户密码
+// request header or cookie 'token',body:{password:'',newPassword:''}
+router.put('/password', body(), setAll, async function (ctx, next) {
+  const token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = common.httpResponse(2003)// token无效
+    return next()
+  }
+  const data = ctx.request.fields
+  const schema = Joi.object().keys({
+    password: Joi.string().min(3).max(30).required(),
+    newPassword: Joi.string().min(3).max(30).required()
+  })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    const details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = common.httpResponse(1001, details)
+    return next()
+  }
+
+  await User.changePassword(token, data.password, data.newPassword)
+  .then((v) => { ctx.response.body = common.httpResponse(0) })
   .catch(err => { ctx.response.body = common.httpResponse(1, err) })
   return next()
 },

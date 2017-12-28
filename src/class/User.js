@@ -109,45 +109,51 @@ class User {
     })
   }
 
-  /**
-   * 验证当前用户密码，返回sensitiveToken
-   *
-   * @static
-   * @param {string} token 用户凭证
-   * @param {string} password 密码
-   * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
-   * @memberof User
-   */
-  static comfirmPassword (token, password) {
-    return redis.getNameByToken(token, 'name')
-    .then((name) => {
-      return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
-    })
-    .then((reads) => {
-      let name = reads[0].name // DEBUG
-      if (reads.length === 0) return Promise.reject('密码错误')
-      else return redis.setSensitiveToken(name)
-    })
-  }
+  // /**
+  //  * 验证当前用户密码，返回sensitiveToken
+  //  *
+  //  * @static
+  //  * @param {string} token 用户凭证
+  //  * @param {string} password 密码
+  //  * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
+  //  * @memberof User
+  //  */
+  // static comfirmPassword (token, password) {
+  //   return redis.getNameByToken(token, 'name')
+  //   .then((name) => {
+  //     return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
+  //   })
+  //   .then((reads) => {
+  //     let name = reads[0].name // DEBUG
+  //     if (reads.length === 0) return Promise.reject('密码错误')
+  //     else return redis.setSensitiveToken(name)
+  //   })
+  // }
 
   /**
    * 修改密码
    *
    * @static
    * @param {string} token 用户凭证
-   * @param {string} sensitiveToken 敏感操作凭证
+   * @param {string} oldPassword 旧密码
    * @param {string} newPassword 新密码
-   * @returns {Promise} reject `${sensitiveToken}`
+   * @returns {Promise}
    * @memberof User
    */
-  static changePassword (token, sensitiveToken, newPassword) {
-    // TODO : token与sensitiveToken 的name对比
-    return redis.getNameBySensitiveToken(sensitiveToken, 'name')
+  static changePassword (token, oldPassword, newPassword) {
+    return redis.getNameByToken(token)
     .then((name) => {
-      return mysql.updated('user', ['password', newPassword], ['name', name])
+      return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(oldPassword)])
+    })
+    .then((reads) => {
+      if (reads.length === 0) return Promise.reject('密码错误')
+      else return Promise.resolve(reads[0].name)
+    })
+    .then((name) => {
+      return mysql.updated('user', ['password', common.akoaMd5(newPassword)], ['name', name])
     })
     .then(v => {
-      return Promise('成功修改密码')
+      return Promise.resolve('成功修改密码')
     })
   }
 
