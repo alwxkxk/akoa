@@ -15,7 +15,7 @@ const emailer = require('./emailer.js')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 const setAll = function setAll (ctx, next) {
-  ctx.response.type = 'json'// 将所有/api路由设置为json响应
+  ctx.type = 'json'// 将所有/api路由设置为json响应
   return next()
 }
 // POST /api/test 测试专用API 返回请求的所有信息
@@ -31,8 +31,8 @@ router.post('/test', body(), setAll, function * (next) {
   // this.cookies.set('cookieTest', 'test')// 测试cookies
   console.log(this.cookies.get('token'))
   console.log(this.cookies)
-  this.response.type = 'json'  // 这里的this 等效于ctx
-  this.response.body = common.httpResponse(0, data)
+  this.type = 'json'  // 这里的this 等效于ctx
+  this.body = common.httpResponse(0, data)
   yield next
 })
 
@@ -50,11 +50,11 @@ router.post('/user', body(), setAll, async function (ctx, next) {
 
   if (result.error) {
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
   } else {
     await User.register(post.name, post.password)
-      .then(() => { ctx.response.body = common.httpResponse(0) })
-      .catch((err) => { ctx.response.body = common.httpResponse(1, { detail: err }) })
+      .then(() => { ctx.body = common.httpResponse(0) })
+      .catch((err) => { ctx.body = common.httpResponse(1, { detail: err }) })
   }
   return next()
 },
@@ -77,17 +77,17 @@ router.post('/token', body(), setAll, async function (ctx, next) {
   if (result.error) {
    // 取得参数有误的所有messages
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
     return next()
   }
    // 账号登陆
   await User.login(data.name, data.password)
     .then((user) => {
       ctx.cookies.set('token', user.token)
-      ctx.response.body = common.httpResponse(0, user)
+      ctx.body = common.httpResponse(0, user)
     })
    .catch((err) => {
-     ctx.response.body = common.httpResponse(2002, err)
+     ctx.body = common.httpResponse(2002, err)
    })
 
   return next()
@@ -99,21 +99,21 @@ router.post('/token', body(), setAll, async function (ctx, next) {
 // request header or cookie 'token'
 router.del('/token', body(), setAll, async function (ctx, next) {
   // 从cookie或header中提取出token
-  const token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.header.token || ctx.cookies.get('token')
   if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
+    ctx.body = common.httpResponse(2003)// token无效
     return next()
   }
-  // console.log(ctx.request.header.token, ctx.cookies.get('token'))
+  // console.log(ctx.header.token, ctx.cookies.get('token'))
 
   // 从缓存中删除此token
   await User.logout(token)
   .then((v) => {
-    ctx.response.body = common.httpResponse(0)
+    ctx.body = common.httpResponse(0)
   })
   .catch((err) => {
     // token 无效
-    ctx.response.body = common.httpResponse(2003, err)
+    ctx.body = common.httpResponse(2003, err)
   })
 
   return next()
@@ -135,18 +135,18 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 // request header or cookie 'token'
 // response 成功的返回数据 包含日志列表logList:[...]
 router.get('/log', body(), setAll, async function (ctx, next) {
-  const token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.header.token || ctx.cookies.get('token')
   if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
+    ctx.body = common.httpResponse(2003)// token无效
     return next()
   }
 
   await User.getUserLog(token)
   .then(logList => {
-    ctx.response.body = common.httpResponse(0, logList)
+    ctx.body = common.httpResponse(0, logList)
   })
   .catch(e => {
-    ctx.response.body = common.httpResponse(1, e)
+    ctx.body = common.httpResponse(1, e)
   })
 
   return next()
@@ -159,9 +159,9 @@ function * (next) {
 // request header or cookie 'token',body:{password:''}
 // response 成功的返回数据 包含敏感token sensitiveToken:...
 // router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
-//   const token = ctx.request.header.token || ctx.cookies.get('token')
+//   const token = ctx.header.token || ctx.cookies.get('token')
 //   if (!token) {
-//     ctx.response.body = common.httpResponse(2003)// token无效
+//     ctx.body = common.httpResponse(2003)// token无效
 //     return next()
 //   }
 //   const data = ctx.request.fields
@@ -172,13 +172,13 @@ function * (next) {
 //   if (result.error) {
 //     // 取得参数有误的所有messages
 //     const details = { details: _.map(result.error.details, 'message') }
-//     ctx.response.body = common.httpResponse(1001, details)
+//     ctx.body = common.httpResponse(1001, details)
 //     return next()
 //   }
 
 //   await User.comfirmPassword(token, data.password)
-//   .then(sensitiveToken => { ctx.response.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
-//   .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+//   .then(sensitiveToken => { ctx.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
+//   .catch(err => { ctx.body = common.httpResponse(1, err) })
 //   return next()
 // },
 // function * (next) {
@@ -188,9 +188,9 @@ function * (next) {
 // PUT /api/password 修改用户密码
 // request header or cookie 'token',body:{password:'',newPassword:''}
 router.put('/password', body(), setAll, async function (ctx, next) {
-  const token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.header.token || ctx.cookies.get('token')
   if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
+    ctx.body = common.httpResponse(2003)// token无效
     return next()
   }
   const data = ctx.request.fields
@@ -202,13 +202,13 @@ router.put('/password', body(), setAll, async function (ctx, next) {
   if (result.error) {
     // 取得参数有误的所有messages
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
     return next()
   }
 
   await User.changePassword(token, data.password, data.newPassword)
-  .then((v) => { ctx.response.body = common.httpResponse(0) })
-  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  .then((v) => { ctx.body = common.httpResponse(0) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 },
 function * (next) {
@@ -226,13 +226,13 @@ router.del('/password/email/:email', setAll, async function (ctx, next) {
   if (result.error) {
     // 取得参数有误的所有messages
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
     return next()
   }
 
   await User.forgetPassword(data.email)
-  .then(v => { ctx.response.body = common.httpResponse(0) })
-  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  .then(v => { ctx.body = common.httpResponse(0) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 }, function * (next) {
   yield next
@@ -242,9 +242,9 @@ router.del('/password/email/:email', setAll, async function (ctx, next) {
 // request header or cookie 'token',body: form-data:image file
 // response 成功的返回数据 包含图片名称 imageName:...
 router.post('/avatar', setAll, async function (ctx, next) {
-  const token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.header.token || ctx.cookies.get('token')
   if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
+    ctx.body = common.httpResponse(2003)// token无效
     return next()
   }
   const { files } = await asyncBusboy(ctx.req)
@@ -253,7 +253,7 @@ router.post('/avatar', setAll, async function (ctx, next) {
     const suffix = path.extname(image.filename)
     if (config.ImageType.indexOf(suffix) === -1) {
       // 图片格式错误
-      ctx.response.body = common.httpResponse(1003)
+      ctx.body = common.httpResponse(1003)
       return next()
     }
     const imageName = common.uuid() + suffix
@@ -263,15 +263,15 @@ router.post('/avatar', setAll, async function (ctx, next) {
     // 返回图片名
     await User.changeAvatar(token, imageName)
     .then((v) => {
-      ctx.response.body = common.httpResponse(0, {imageName: imageName})
+      ctx.body = common.httpResponse(0, {imageName: imageName})
       return next()
     })
     .catch((err) => {
-      ctx.response.body = common.httpResponse(1, err)
+      ctx.body = common.httpResponse(1, err)
       return next()
     })
   } else {
-    ctx.response.body = common.httpResponse(1003)
+    ctx.body = common.httpResponse(1003)
     return next()
   }
 }, function * (next) {
@@ -281,9 +281,9 @@ router.post('/avatar', setAll, async function (ctx, next) {
 // post /api/email 用户申请 修改邮箱
 // request header or cookie 'token',body: {password:'',email:''}
 router.post('/email', body(), setAll, async function (ctx, next) {
-  const token = ctx.request.header.token || ctx.cookies.get('token')
+  const token = ctx.header.token || ctx.cookies.get('token')
   if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
+    ctx.body = common.httpResponse(2003)// token无效
     return next()
   }
   const data = ctx.request.fields
@@ -295,16 +295,16 @@ router.post('/email', body(), setAll, async function (ctx, next) {
   if (result.error) {
     // 取得参数有误的所有messages
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
     return next()
   }
 
   await User.getSensitiveToken(token, data.password)
   .then(sensitiveToken => {
     emailer.userSetEmail(data.email, sensitiveToken)
-    ctx.response.body = common.httpResponse(0)
+    ctx.body = common.httpResponse(0)
   })
-  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 }, function * (next) {
   yield next
@@ -323,15 +323,15 @@ router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async functio
   if (result.error) {
     // 取得参数有误的所有messages
     const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
+    ctx.body = common.httpResponse(1001, details)
     return next()
   }
   await User.setEmail(data.sensitiveToken, data.email)
   .then(v => {
-    ctx.response.body = '修改邮件成功'
+    ctx.body = '修改邮件成功'
   })
-  .catch(err => { ctx.response.body = '修改邮件失败：' + err })
-  ctx.response.type = 'html'
+  .catch(err => { ctx.body = '修改邮件失败：' + err })
+  ctx.type = 'html'
   return next()
 }, function * (next) {
   yield next
@@ -349,7 +349,7 @@ router.post('/image', setAll, async function (ctx, next) {
     const suffix = path.extname(image.filename)
     if (config.ImageType.indexOf(suffix) === -1) {
       // 图片格式错误
-      ctx.response.body = common.httpResponse(1003)
+      ctx.body = common.httpResponse(1003)
       return next()
     }
     const imageName = common.uuid() + suffix
@@ -357,10 +357,10 @@ router.post('/image', setAll, async function (ctx, next) {
     // 取得文件后缀名 格式检查 用uuid创建新文件
     image.pipe(fs.createWriteStream(saveTo))
     // 返回图片路径
-    ctx.response.body = common.httpResponse(0, {imageName: imageName})
+    ctx.body = common.httpResponse(0, {imageName: imageName})
     return next()
   } else {
-    ctx.response.body = common.httpResponse(1003)
+    ctx.body = common.httpResponse(1003)
     return next()
   }
 }, function * (next) {
@@ -375,8 +375,8 @@ router.get('/image/:imageName', setAll, async function (ctx, next) {
   // console.log(ctx.params.imageName)
   const readFile = util.promisify(fs.readFile)
   const image = await readFile(path.join(config.ImagePath, imageName))
-  ctx.response.body = image
-  ctx.response.type = 'image/' + path.extname(imageName).substr(1)
+  ctx.body = image
+  ctx.type = 'image/' + path.extname(imageName).substr(1)
   return next()
 }, function * (next) {
   yield next
