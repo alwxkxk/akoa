@@ -11,7 +11,7 @@ const config = require('../config/config.js')
 const path = require('path')
 const fs = require('fs')
 const util = require('util')
-const email = require('./email.js')
+const emailer = require('./emailer.js')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 const setAll = function setAll (ctx, next) {
@@ -215,6 +215,29 @@ function * (next) {
   yield next
 })
 
+// DELETE  /api/password/email/:email 忘记密码 删除旧密码，给邮箱发送新的随机密码
+router.del('/password/email/:email', setAll, async function (ctx, next) {
+  const data = {}
+  data.email = ctx.params.email
+  const schema = Joi.object().keys({
+    email: Joi.string().email().required()
+  })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    const details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = common.httpResponse(1001, details)
+    return next()
+  }
+
+  await User.forgetPassword(data.email)
+  .then(v => { ctx.response.body = common.httpResponse(0) })
+  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  return next()
+}, function * (next) {
+  yield next
+})
+
 // post /api/avatar 更改用户头像
 // request header or cookie 'token',body: form-data:image file
 // response 成功的返回数据 包含图片名称 imageName:...
@@ -278,7 +301,7 @@ router.post('/email', body(), setAll, async function (ctx, next) {
 
   await User.getSensitiveToken(token, data.password)
   .then(sensitiveToken => {
-    email.userSetEmail(data.email, sensitiveToken)
+    emailer.userSetEmail(data.email, sensitiveToken)
     ctx.response.body = common.httpResponse(0)
   })
   .catch(err => { ctx.response.body = common.httpResponse(1, err) })

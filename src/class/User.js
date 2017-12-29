@@ -7,6 +7,7 @@ const bunyan = require('bunyan')
 const path = require('path')
 const readline = require('readline')
 const fs = require('fs')
+const emailer = require('../emailer.js')
 
 class User {
   /**
@@ -124,9 +125,8 @@ class User {
       return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
     })
     .then((reads) => {
-      let name = reads[0].name // DEBUG
       if (reads.length === 0) return Promise.reject('密码错误')
-      else return redis.setSensitiveToken(name)
+      else return redis.setSensitiveToken(reads[0].name)
     })
   }
 
@@ -192,8 +192,27 @@ class User {
       return Promise.resolve('成功修改头像')
     })
   }
+
+/**
+ *用户忘记密码，通过邮箱找到用户，修改成随机密码并发送给用户。
+ *
+ * @static
+ * @param {string} email
+ * @memberof User
+ */
+  static forgetPassword (email) {
+    const newPassword = common.akoaMd5(common.now())
+    return mysql.read('user', ['name'], ['email', email])
+    .then(reads => {
+      if (reads.length === 0) return Promise.reject('邮箱不存在')
+      else {
+        emailer.forgetPassword(email, reads[0].name, newPassword)
+        return mysql.updated('user', ['password', newPassword], ['name', reads[0].name])
+      }
+    })
+  }
+
   // 修改昵称
-  // 邮箱验证
 }
 
 /**
