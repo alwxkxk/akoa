@@ -106,6 +106,10 @@ client.tokenValidate = function tokenValidate (token) {
  */
 client.getNameByToken = function getNameByToken (token) {
   return client.hgetAsync(token, 'name')
+  .then(name => {
+    if (name) return Promise.resolve(name)
+    else return Promise.reject('token无效')
+  })
 }
 
 /**
@@ -116,6 +120,10 @@ client.getNameByToken = function getNameByToken (token) {
  */
 client.getNameBySensitiveToken = function getNameBySensitiveToken (sensitiveToken) {
   return client.getAsync(sensitiveToken)
+  .then(name => {
+    if (name) return Promise.resolve(name)
+    else return Promise.reject('token无效')
+  })
 }
 /**
  * 删除敏感token
@@ -126,8 +134,8 @@ client.deleteSensitiveToken = function deleteSensitiveToken (sensitiveToken) {
   client.del(sensitiveToken)
 }
 
-// TODO:初始化，将所有账号名保存到一个列表中
-// TODO:提供 redis检测有无账号名重名的API   nameUnique
+// TODO:用于防重复检测账号名邮箱昵称的缓存
+
 // 结束连接
 // client.quit()
 module.exports = client
