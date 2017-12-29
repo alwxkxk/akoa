@@ -282,9 +282,6 @@ router.post('/email', body(), setAll, async function (ctx, next) {
     ctx.response.body = common.httpResponse(0)
   })
   .catch(err => { ctx.response.body = common.httpResponse(1, err) })
-  // .then(sensitiveToken => { return User.setEmail(sensitiveToken, data.email) })
-  // .then(v => { ctx.response.body = common.httpResponse(0) })
-  // .catch(err => { ctx.response.body = common.httpResponse(1, err) })
   return next()
 }, function * (next) {
   yield next
@@ -292,13 +289,26 @@ router.post('/email', body(), setAll, async function (ctx, next) {
 
 // GET /sensitiveToken/:sensitiveToken/email/:email 点击url 修改用户邮箱地址
 router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async function (ctx, next) {
-  const sensitiveToken = ctx.params.sensitiveToken
-  const email = ctx.params.email
-  await User.setEmail(sensitiveToken, email)
-  .then(v => {
-    ctx.response.body = common.httpResponse(0)
+  const data = {}
+  data.sensitiveToken = ctx.params.sensitiveToken
+  data.email = ctx.params.email
+  const schema = Joi.object().keys({
+    sensitiveToken: Joi.string().required(),
+    email: Joi.string().email().required()
   })
-  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    const details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = common.httpResponse(1001, details)
+    return next()
+  }
+  await User.setEmail(data.sensitiveToken, data.email)
+  .then(v => {
+    ctx.response.body = '修改邮件成功'
+  })
+  .catch(err => { ctx.response.body = '修改邮件失败：' + err })
+  ctx.response.type = 'html'
   return next()
 }, function * (next) {
   yield next

@@ -2,6 +2,7 @@
 'use strict'
 const nodemailer = require('nodemailer')
 const emailConfig = require('../config/config.js').emailConfig
+const serverUrl = require('../config/config.js').serverUrl
 const log = require('./log.js')
 // Generate test SMTP service account from ethereal.email
 // Only needed if you don't have a real mail account for testing
@@ -36,7 +37,8 @@ function sentEmail (to, subject, text, html) {
         if (error) {
           return log.error(error)
         }
-        console.log(info)
+        // 显示发送邮件的信息
+        // console.log(info)
       })
     }
   })
@@ -49,7 +51,7 @@ function sentEmail (to, subject, text, html) {
  * @param {string} sensitiveToken
  */
 function userSetEmail (to, sensitiveToken) {
-  const text = '你好，点击http://www.scaugreen.cn/sensitiveToken/' + sensitiveToken + '/email/' + to + ' ,设置你的用户邮箱'
+  const text = '你好，akoa设置邮箱，点击' + serverUrl + '/api/sensitiveToken/' + sensitiveToken + '/email/' + to + ' ,设置你的用户邮箱。（如果不是你本人操作，请勿点击。）'
   sentEmail(to, '用户邮箱设置', text)
 }
 

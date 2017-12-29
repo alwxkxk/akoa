@@ -167,7 +167,7 @@ class User {
    * @memberof User
    */
   static setEmail (sensitiveToken, email) {
-    return redis.getSensitiveToken(sensitiveToken)
+    return redis.getNameBySensitiveToken(sensitiveToken)
     .then(name => { return mysql.updated('user', ['email', email], ['name', name]) })
     .then(v => {
       redis.deleteSensitiveToken(sensitiveToken)
