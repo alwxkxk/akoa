@@ -1,7 +1,8 @@
 let config = {
-  PORT: 80,
-  ImagePath: '',
-  ImageType: ['.jpg', '.png'],
+  PORT: 7999, // 程序启动所监听的端口
+  serverUrl: 'http://www.example.com:8999', // nginx所配置的地址与端口
+  ImagePath: '/var/www/images',
+  ImageType: ['.jpg', '.JPG', '.png'],
   // ------- mysql ------------
   mysqlConfig: {
     host: '',
@@ -29,7 +30,7 @@ let config = {
     port: 465,
     secure: true, // true for 465, false for other ports
     auth: {
-      user: '', // generated ethereal user
+      user: 'smtp.exmail.qq.com', // generated ethereal user
       pass: ''  // generated ethereal password
     }
   }
