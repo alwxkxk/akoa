@@ -11,6 +11,7 @@ const config = require('../config/config.js')
 const path = require('path')
 const fs = require('fs')
 const util = require('util')
+const email = require('./email.js')
 
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 const setAll = function setAll (ctx, next) {
@@ -157,34 +158,34 @@ function * (next) {
 // POST /api/sensitiveToken 通过重输密码 取得敏感操作token
 // request header or cookie 'token',body:{password:''}
 // response 成功的返回数据 包含敏感token sensitiveToken:...
-router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
-  const token = ctx.request.header.token || ctx.cookies.get('token')
-  if (!token) {
-    ctx.response.body = common.httpResponse(2003)// token无效
-    return next()
-  }
-  const data = ctx.request.fields
-  const schema = Joi.object().keys({
-    password: Joi.string().min(3).max(30).required()
-  })
-  const result = Joi.validate(data, schema, { abortEarly: false })
-  if (result.error) {
-    // 取得参数有误的所有messages
-    const details = { details: _.map(result.error.details, 'message') }
-    ctx.response.body = common.httpResponse(1001, details)
-    return next()
-  }
+// router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
+//   const token = ctx.request.header.token || ctx.cookies.get('token')
+//   if (!token) {
+//     ctx.response.body = common.httpResponse(2003)// token无效
+//     return next()
+//   }
+//   const data = ctx.request.fields
+//   const schema = Joi.object().keys({
+//     password: Joi.string().min(3).max(30).required()
+//   })
+//   const result = Joi.validate(data, schema, { abortEarly: false })
+//   if (result.error) {
+//     // 取得参数有误的所有messages
+//     const details = { details: _.map(result.error.details, 'message') }
+//     ctx.response.body = common.httpResponse(1001, details)
+//     return next()
+//   }
 
-  await User.comfirmPassword(token, data.password)
-  .then(sensitiveToken => { ctx.response.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
-  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
-  return next()
-},
-function * (next) {
-  yield next
-})
+//   await User.comfirmPassword(token, data.password)
+//   .then(sensitiveToken => { ctx.response.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
+//   .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+//   return next()
+// },
+// function * (next) {
+//   yield next
+// })
 
-// POST /api/password 修改用户密码
+// PUT /api/password 修改用户密码
 // request header or cookie 'token',body:{password:'',newPassword:''}
 router.put('/password', body(), setAll, async function (ctx, next) {
   const token = ctx.request.header.token || ctx.cookies.get('token')
@@ -250,6 +251,55 @@ router.post('/avatar', setAll, async function (ctx, next) {
     ctx.response.body = common.httpResponse(1003)
     return next()
   }
+}, function * (next) {
+  yield next
+})
+
+// post /api/email 用户申请 修改邮箱
+// request header or cookie 'token',body: {password:'',email:''}
+router.post('/email', body(), setAll, async function (ctx, next) {
+  const token = ctx.request.header.token || ctx.cookies.get('token')
+  if (!token) {
+    ctx.response.body = common.httpResponse(2003)// token无效
+    return next()
+  }
+  const data = ctx.request.fields
+  const schema = Joi.object().keys({
+    password: Joi.string().min(3).max(30).required(),
+    email: Joi.string().email().required()
+  })
+  const result = Joi.validate(data, schema, { abortEarly: false })
+  if (result.error) {
+    // 取得参数有误的所有messages
+    const details = { details: _.map(result.error.details, 'message') }
+    ctx.response.body = common.httpResponse(1001, details)
+    return next()
+  }
+
+  await User.getSensitiveToken(token, data.password)
+  .then(sensitiveToken => {
+    email.userSetEmail(data.email, sensitiveToken)
+    ctx.response.body = common.httpResponse(0)
+  })
+  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  // .then(sensitiveToken => { return User.setEmail(sensitiveToken, data.email) })
+  // .then(v => { ctx.response.body = common.httpResponse(0) })
+  // .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  return next()
+}, function * (next) {
+  yield next
+})
+
+// GET /sensitiveToken/:sensitiveToken/email/:email 点击url 修改用户邮箱地址
+router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async function (ctx, next) {
+  const sensitiveToken = ctx.params.sensitiveToken
+  const email = ctx.params.email
+  await User.setEmail(sensitiveToken, email)
+  .then(v => {
+    ctx.response.body = common.httpResponse(0)
+  })
+  .catch(err => { ctx.response.body = common.httpResponse(1, err) })
+  return next()
 }, function * (next) {
   yield next
 })

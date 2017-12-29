@@ -71,7 +71,7 @@ class User {
    */
   static logout (token) {
     // 在redit里删除用户凭证
-    return redis.getNameByToken(token, 'name')
+    return redis.getNameByToken(token)
     .then((name) => {
       if (!name) return Promise.reject('token已过期')
       userLog(name, {time: common.now(), action: '退出登陆'})
@@ -88,7 +88,7 @@ class User {
    * @memberof User
    */
   static getUserLog (token) {
-    return redis.getNameByToken(token, 'name')
+    return redis.getNameByToken(token)
     .then((name) => {
       if (!name) return Promise.reject('token已过期')
       return new Promise((resolve, reject) => {
@@ -109,26 +109,26 @@ class User {
     })
   }
 
-  // /**
-  //  * 验证当前用户密码，返回sensitiveToken
-  //  *
-  //  * @static
-  //  * @param {string} token 用户凭证
-  //  * @param {string} password 密码
-  //  * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
-  //  * @memberof User
-  //  */
-  // static comfirmPassword (token, password) {
-  //   return redis.getNameByToken(token, 'name')
-  //   .then((name) => {
-  //     return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
-  //   })
-  //   .then((reads) => {
-  //     let name = reads[0].name // DEBUG
-  //     if (reads.length === 0) return Promise.reject('密码错误')
-  //     else return redis.setSensitiveToken(name)
-  //   })
-  // }
+  /**
+   * 验证当前用户密码，返回sensitiveToken
+   *
+   * @static
+   * @param {string} token 用户凭证
+   * @param {string} password 密码
+   * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
+   * @memberof User
+   */
+  static getSensitiveToken (token, password) {
+    return redis.getNameByToken(token)
+    .then((name) => {
+      return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
+    })
+    .then((reads) => {
+      let name = reads[0].name // DEBUG
+      if (reads.length === 0) return Promise.reject('密码错误')
+      else return redis.setSensitiveToken(name)
+    })
+  }
 
   /**
    * 修改密码
@@ -158,6 +158,23 @@ class User {
   }
 
   /**
+   * 设备用户邮箱
+   *
+   * @static
+   * @param {string} sensitiveToken 敏感操作token
+   * @param {string} email 邮箱地址
+   * @returns {Promise}
+   * @memberof User
+   */
+  static setEmail (sensitiveToken, email) {
+    return redis.getSensitiveToken(sensitiveToken)
+    .then(name => { return mysql.updated('user', ['email', email], ['name', name]) })
+    .then(v => {
+      redis.deleteSensitiveToken(sensitiveToken)
+      return Promise.resolve('修改邮箱成功')
+    })
+  }
+  /**
    * 修改头像
    *
    * @static
@@ -167,7 +184,7 @@ class User {
    * @memberof User
    */
   static changeAvatar (token, imageName) {
-    return redis.getNameByToken(token, 'name')
+    return redis.getNameByToken(token)
     .then((name) => {
       return mysql.updated('user', ['avatar', imageName], ['name', name])
     })

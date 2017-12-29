@@ -36,12 +36,24 @@ function sentEmail (to, subject, text, html) {
         if (error) {
           return log.error(error)
         }
+        console.log(info)
       })
     }
   })
 }
 
-// TODO:发送验证邮箱
+/**
+ * 用户发送 设置邮箱的邮件
+ *
+ * @param {string} to 目标邮箱
+ * @param {string} sensitiveToken
+ */
+function userSetEmail (to, sensitiveToken) {
+  const text = '你好，点击http://www.scaugreen.cn/sensitiveToken/' + sensitiveToken + '/email/' + to + ' ,设置你的用户邮箱'
+  sentEmail(to, '用户邮箱设置', text)
+}
+
 module.exports = {
-  sentEmail: sentEmail
+  sentEmail: sentEmail,
+  userSetEmail: userSetEmail
 }
