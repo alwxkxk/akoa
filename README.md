@@ -9,5 +9,5 @@ git clone https://github.com/alwxkxk/akoa
 cd akoa
 npm install 
 #先配置config/config.js
-pm2 start /var/akoa/src/app.js --name aoka --max-memory-restart 256M
+pm2 start /var/akoa/src/app.js --name akoa --max-memory-restart 256M
 ```
