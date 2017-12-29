@@ -55,7 +55,13 @@ function userSetEmail (to, sensitiveToken) {
   sentEmail(to, '用户邮箱设置', text)
 }
 
+function forgetPassword (to, name, newpassword) {
+  const text = '你好，akoa网，你的用户名：' + name + '，你的新密码是' + newpassword + '。登陆后请修改密码。'
+  sentEmail(to, '忘记密码', text)
+}
+
 module.exports = {
   sentEmail: sentEmail,
-  userSetEmail: userSetEmail
+  userSetEmail: userSetEmail,
+  forgetPassword: forgetPassword
 }
