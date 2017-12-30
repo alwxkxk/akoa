@@ -201,13 +201,15 @@ class User {
  * @memberof User
  */
   static forgetPassword (email) {
-    const newPassword = common.akoaMd5(common.now())
+    // NOTE: 客户端密码在处理一次，在保存到数据库前再处理一次
+    const newPasswordForUser = common.akoaMd5(common.now()) // 这里模拟客户端的密码第一次处理，根据实际情况修改
+    const newPasswordForDB = common.akoaMd5(newPasswordForUser)
     return mysql.read('user', ['name'], ['email', email])
     .then(reads => {
       if (reads.length === 0) return Promise.reject('邮箱不存在')
       else {
-        emailer.forgetPassword(email, reads[0].name, newPassword)
-        return mysql.updated('user', ['password', newPassword], ['name', reads[0].name])
+        emailer.forgetPassword(email, reads[0].name, newPasswordForUser)
+        return mysql.updated('user', ['password', newPasswordForDB], ['name', reads[0].name])
       }
     })
   }
