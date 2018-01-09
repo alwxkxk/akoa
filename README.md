@@ -1,5 +1,5 @@
 # akoa
-
+这是个人学习的前后端分离项目，avue为前端，akoa为后端，详细的流程设计文档在`doc`目录下。
 # 配置
 将config.sample.js配置信息补全并改名为config.js才能启动。
 # 启动

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <title>用户系统的设计</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\katex\katex.min.css">
+      
+      <link rel="stylesheet" href="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\js-sequence-diagrams\sequence-diagram-min.css">
+      
+      
+      
+      
+      
+      
+      <script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\webfont\webfontloader.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\raphael\raphael.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\underscore\underscore.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\js-sequence-diagrams\sequence-diagram-min.js"></script>
+
+      <style> 
+      /**
+ * prism.js Github theme based on GitHub's theme.
+ * @author Sam Clarke
+ */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #333;
+  background: none;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.4;
+
+  -moz-tab-size: 8;
+  -o-tab-size: 8;
+  tab-size: 8;
+
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+  padding: .8em;
+  overflow: auto;
+  /* border: 1px solid #ddd; */
+  border-radius: 3px;
+  /* background: #fff; */
+  background: #f5f5f5;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+  padding: .1em;
+  border-radius: .3em;
+  white-space: normal;
+  background: #f5f5f5;
+}
+
+.token.comment,
+.token.blockquote {
+  color: #969896;
+}
+
+.token.cdata {
+  color: #183691;
+}
+
+.token.doctype,
+.token.punctuation,
+.token.variable,
+.token.macro.property {
+  color: #333;
+}
+
+.token.operator,
+.token.important,
+.token.keyword,
+.token.rule,
+.token.builtin {
+  color: #a71d5d;
+}
+
+.token.string,
+.token.url,
+.token.regex,
+.token.attr-value {
+  color: #183691;
+}
+
+.token.property,
+.token.number,
+.token.boolean,
+.token.entity,
+.token.atrule,
+.token.constant,
+.token.symbol,
+.token.command,
+.token.code {
+  color: #0086b3;
+}
+
+.token.tag,
+.token.selector,
+.token.prolog {
+  color: #63a35c;
+}
+
+.token.function,
+.token.namespace,
+.token.pseudo-element,
+.token.class,
+.token.class-name,
+.token.pseudo-class,
+.token.id,
+.token.url-reference .token.variable,
+.token.attr-name {
+  color: #795da3;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+.token.title,
+.token.title .token.punctuation {
+  font-weight: bold;
+  color: #1d3e81;
+}
+
+.token.list {
+  color: #ed6a43;
+}
+
+.token.inserted {
+  background-color: #eaffea;
+  color: #55a532;
+}
+
+.token.deleted {
+  background-color: #ffecec;
+  color: #bd2c00;
+}
+
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+
+/* JSON */
+.language-json .token.property {
+  color: #183691;
+}
+
+.language-markup .token.tag .token.punctuation {
+  color: #333;
+}
+
+/* CSS */
+code.language-css,
+.language-css .token.function {
+  color: #0086b3;
+}
+
+/* YAML */
+.language-yaml .token.atrule {
+  color: #63a35c;
+}
+
+code.language-yaml {
+  color: #183691;
+}
+
+/* Ruby */
+.language-ruby .token.function {
+  color: #333;
+}
+
+/* Markdown */
+.language-markdown .token.url {
+  color: #795da3;
+}
+
+/* Makefile */
+.language-makefile .token.symbol {
+  color: #795da3;
+}
+
+.language-makefile .token.variable {
+  color: #183691;
+}
+
+.language-makefile .token.builtin {
+  color: #0086b3;
+}
+
+/* Bash */
+.language-bash .token.keyword {
+  color: #0086b3;
+}html body{font-family:"Helvetica Neue",Helvetica,"Segoe UI",Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ul,html body>ol{margin-bottom:16px}html body ul,html body ol{padding-left:2em}html body ul.no-list,html body ol.no-list{padding:0;list-style-type:none}html body ul ul,html body ul ol,html body ol ol,html body ol ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:bold;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:bold}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em !important;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::before,html body code::after{letter-spacing:-0.2em;content:"\00a0"}html body pre>code{padding:0;margin:0;font-size:.85em !important;word-break:normal;white-space:pre;background:transparent;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;font-size:.85em !important;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:before,html body pre tt:before,html body pre code:after,html body pre tt:after{content:normal}html body p,html body blockquote,html body ul,html body ol,html body dl,html body pre{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body pre,html body code{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview .pagebreak,.markdown-preview .newpage{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center !important}.markdown-preview:not([for="preview"]) .code-chunk .btn-group{display:none}.markdown-preview:not([for="preview"]) .code-chunk .status{display:none}.markdown-preview:not([for="preview"]) .code-chunk .output-div{margin-bottom:16px}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0}@media screen and (min-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px)}}@media screen and (max-width:914px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode]) .markdown-preview{font-size:14px !important;padding:1em}}@media print{html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for="html-export"]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,0.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,0.66);border:4px solid rgba(150,150,150,0.66);background-clip:content-box}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{padding:0 1.6em;margin-top:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc li{margin-bottom:.8em}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc ul{list-style-type:none}html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% -  300px);padding:2em calc(50% - 457px -  150px);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for="html-export"]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for="html-export"]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+ 
+      </style>
+    </head>
+    <body for="html-export">
+      <div class="mume markdown-preview   ">
+      <div class="code-chunk" data-id="code-chunk-id-0" data-cmd="toc" data-code=""><div class="btn-group"><div class="run-btn btn"><span>▶︎</span></div><div class="run-all-btn btn">all</div></div><div class="status">running...</div><div class="output-div"></div></div>
+<ol>
+<li><a href="#%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F">用户系统</a>
+<ol>
+<li><a href="#%E9%9C%80%E6%B1%82">需求</a></li>
+<li><a href="#%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0">功能实现</a>
+<ol>
+<li><a href="#%E7%94%A8%E6%88%B7%E5%87%AD%E8%AF%81-token">用户凭证 token</a>
+<ol>
+<li><a href="#token%E7%9A%84%E7%94%9F%E6%88%90">token的生成</a></li>
+<li><a href="#%E6%96%B0token%E8%A6%86%E7%9B%96%E6%97%A7token">新token覆盖旧token</a></li>
+</ol>
+</li>
+<li><a href="#%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</a>
+<ol>
+<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</a></li>
+</ol>
+</li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E9%AA%8C%E8%AF%81%E9%82%AE%E7%AE%B1%E6%B5%81%E7%A8%8B">修改验证邮箱流程</a></li>
+<li><a href="#%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">忘记密码流程</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E5%A4%B4%E5%83%8F">修改用户头像</a></li>
+<li><a href="#%E8%B4%A6%E5%8F%B7%E6%97%A5%E5%BF%97">账号日志</a></li>
+</ol>
+</li>
+<li><a href="#%E5%94%AF%E4%B8%80%E6%80%A7%E6%A3%80%E6%B5%8Btodo">唯一性检测（TODO）</a></li>
+<li><a href="#%E5%AE%89%E5%85%A8todo">安全（TODO）</a></li>
+</ol>
+</li>
+</ol>
+<h1 class="mume-header" id="%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F">用户系统</h1>
+
+<h2 class="mume-header" id="%E9%9C%80%E6%B1%82">需求</h2>
+
+<p>实现账号的注册登陆、修改密码、设置邮箱等账号功能。普通用户在账号的基础上还拥有其它系统提供的操作功能，管理员拥有其它系统提供的管理功能。</p>
+<p><?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="493px" preserveAspectRatio="none" style="width:332px;height:493px;" version="1.1" viewBox="0 0 332 493" width="332px" zoomAndPan="magnify"><defs><filter height="300%" id="f39slfhg9e1el" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"></feGaussianBlur><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"></feColorMatrix><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"></feOffset><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"></feBlend></filter></defs><g><!--class 其它系统的操作功能--><rect fill="#FEFECE" filter="url(#f39slfhg9e1el)" height="48" id="&#x5176;&#x5B83;&#x7CFB;&#x7EDF;&#x7684;&#x64CD;&#x4F5C;&#x529F;&#x80FD;" style="stroke: #A80036; stroke-width: 1.5;" width="140" x="6" y="434"></rect><ellipse cx="21" cy="450" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"></ellipse><path d="M17.5938,444.2813 L17.5938,443.875 L23.9063,443.875 L23.9063,444.2813 L21.375,444.2813 Q21.375,444.2813 21.5234,444.4141 Q21.6719,444.5469 21.6719,444.8125 L21.6719,454.2969 Q21.6719,454.5625 21.8906,454.6953 Q22.1094,454.8281 22.1094,454.8281 L23.9063,454.8281 L23.9063,455.2344 L17.5938,455.2344 L17.5938,454.8281 L19.125,454.8281 Q19.4531,454.8281 19.5859,454.6953 Q19.7188,454.5625 19.7188,454.2969 L19.7188,444.8125 Q19.7188,444.5469 19.5859,444.4141 Q19.4531,444.2813 19.125,444.2813 L17.5938,444.2813 Z "></path><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="108" x="35" y="455.5576">其它系统的操作功能</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="145" y1="466" y2="466"></line><line style="stroke: #A80036; stroke-width: 1.5;" x1="7" x2="145" y1="474" y2="474"></line><!--class 其它系统的管理功能--><rect fill="#FEFECE" filter="url(#f39slfhg9e1el)" height="48" id="&#x5176;&#x5B83;&#x7CFB;&#x7EDF;&#x7684;&#x7BA1;&#x7406;&#x529F;&#x80FD;" style="stroke: #A80036; stroke-width: 1.5;" width="140" x="181" y="434"></rect><ellipse cx="196" cy="450" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"></ellipse><path d="M192.5938,444.2813 L192.5938,443.875 L198.9063,443.875 L198.9063,444.2813 L196.375,444.2813 Q196.375,444.2813 196.5234,444.4141 Q196.6719,444.5469 196.6719,444.8125 L196.6719,454.2969 Q196.6719,454.5625 196.8906,454.6953 Q197.1094,454.8281 197.1094,454.8281 L198.9063,454.8281 L198.9063,455.2344 L192.5938,455.2344 L192.5938,454.8281 L194.125,454.8281 Q194.4531,454.8281 194.5859,454.6953 Q194.7188,454.5625 194.7188,454.2969 L194.7188,444.8125 Q194.7188,444.5469 194.5859,444.4141 Q194.4531,444.2813 194.125,444.2813 L192.5938,444.2813 Z "></path><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="108" x="210" y="455.5576">其它系统的管理功能</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="182" x2="320" y1="466" y2="466"></line><line style="stroke: #A80036; stroke-width: 1.5;" x1="182" x2="320" y1="474" y2="474"></line><!--class 账号--><rect fill="#FEFECE" filter="url(#f39slfhg9e1el)" height="258.3213" id="&#x8D26;&#x53F7;" style="stroke: #A80036; stroke-width: 1.5;" width="106" x="110" y="8"></rect><ellipse cx="147.5" cy="24" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"></ellipse><path d="M146.0781,29.3594 Q144.2188,29.3594 143.125,27.9688 Q142.0313,26.5781 142.0313,23.5938 Q142.0313,21.0625 143.1953,19.4063 Q144.3594,17.75 146.3438,17.75 Q147.8125,17.75 148.2813,17.875 Q148.75,18.0781 148.75,18.0781 Q148.75,18.0781 148.75,18.0078 Q148.75,17.9375 149.3594,17.0156 L150.4063,20.6719 L149.0781,21.0781 Q148.6094,19.5313 147.9453,18.8672 Q147.2813,18.2031 146.2188,18.2031 Q145.8281,18.2031 145.0625,19.7344 Q144.2969,21.2656 144.2969,23.5156 Q144.2969,25.9844 144.9609,27.375 Q145.625,28.7656 146.1563,28.7656 Q147.2188,28.7656 147.9766,28 Q148.7344,27.2344 149.0781,25.5781 L150.4063,26.1719 Q150.0781,27.5781 149.1797,28.4688 Q148.2813,29.3594 146.0781,29.3594 Z "></path><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="24" x="166.5" y="29.5576">账号</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="111" x2="215" y1="40" y2="40"></line><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="26" x="116" y="56.606">name</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="46" x="116" y="71.6289">nickName</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="24" x="116" y="86.6519">email</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="31" x="116" y="101.6748">avatar</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="53" x="116" y="116.6978">createTime</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="39" x="116" y="131.7207">lastTime</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="111" x2="215" y1="138.1377" y2="138.1377"></line><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="45" x="116" y="154.7437">register()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="30" x="116" y="169.7666">login()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="37" x="116" y="184.7896">logout()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="47" x="116" y="199.8125">setEmail()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="56" x="116" y="214.8354">setAvatar()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="94" x="116" y="229.8584">changePassword()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="87" x="116" y="244.8813">forgetPassword()</text><text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="41" x="116" y="259.9043">getLog()</text><!--class 普通用户--><rect fill="#FEFECE" filter="url(#f39slfhg9e1el)" height="48" id="&#x666E;&#x901A;&#x7528;&#x6237;" style="stroke: #A80036; stroke-width: 1.5;" width="80" x="52" y="326"></rect><ellipse cx="67" cy="342" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"></ellipse><path d="M65.5781,347.3594 Q63.7188,347.3594 62.625,345.9688 Q61.5313,344.5781 61.5313,341.5938 Q61.5313,339.0625 62.6953,337.4063 Q63.8594,335.75 65.8438,335.75 Q67.3125,335.75 67.7813,335.875 Q68.25,336.0781 68.25,336.0781 Q68.25,336.0781 68.25,336.0078 Q68.25,335.9375 68.8594,335.0156 L69.9063,338.6719 L68.5781,339.0781 Q68.1094,337.5313 67.4453,336.8672 Q66.7813,336.2031 65.7188,336.2031 Q65.3281,336.2031 64.5625,337.7344 Q63.7969,339.2656 63.7969,341.5156 Q63.7969,343.9844 64.4609,345.375 Q65.125,346.7656 65.6563,346.7656 Q66.7188,346.7656 67.4766,346 Q68.2344,345.2344 68.5781,343.5781 L69.9063,344.1719 Q69.5781,345.5781 68.6797,346.4688 Q67.7813,347.3594 65.5781,347.3594 Z "></path><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="48" x="81" y="347.5576">普通用户</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="53" x2="131" y1="358" y2="358"></line><line style="stroke: #A80036; stroke-width: 1.5;" x1="53" x2="131" y1="366" y2="366"></line><!--class 管理员--><rect fill="#FEFECE" filter="url(#f39slfhg9e1el)" height="48" id="&#x7BA1;&#x7406;&#x5458;" style="stroke: #A80036; stroke-width: 1.5;" width="68" x="200" y="326"></rect><ellipse cx="215" cy="342" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"></ellipse><path d="M213.5781,347.3594 Q211.7188,347.3594 210.625,345.9688 Q209.5313,344.5781 209.5313,341.5938 Q209.5313,339.0625 210.6953,337.4063 Q211.8594,335.75 213.8438,335.75 Q215.3125,335.75 215.7813,335.875 Q216.25,336.0781 216.25,336.0781 Q216.25,336.0781 216.25,336.0078 Q216.25,335.9375 216.8594,335.0156 L217.9063,338.6719 L216.5781,339.0781 Q216.1094,337.5313 215.4453,336.8672 Q214.7813,336.2031 213.7188,336.2031 Q213.3281,336.2031 212.5625,337.7344 Q211.7969,339.2656 211.7969,341.5156 Q211.7969,343.9844 212.4609,345.375 Q213.125,346.7656 213.6563,346.7656 Q214.7188,346.7656 215.4766,346 Q216.2344,345.2344 216.5781,343.5781 L217.9063,344.1719 Q217.5781,345.5781 216.6797,346.4688 Q215.7813,347.3594 213.5781,347.3594 Z "></path><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="36" x="229" y="347.5576">管理员</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="201" x2="267" y1="358" y2="358"></line><line style="stroke: #A80036; stroke-width: 1.5;" x1="201" x2="267" y1="366" y2="366"></line><!--link 账号 to 普通用户--><path d="M113.409,285.375 C108.185,300.901 103.4467,314.982 99.7636,325.928 " fill="none" id="&#x8D26;&#x53F7;-&#x666E;&#x901A;&#x7528;&#x6237;" style="stroke: #A80036; stroke-width: 1.0;"></path><polygon fill="none" points="106.844,282.936,119.857,266.213,120.113,287.401,106.844,282.936" style="stroke: #A80036; stroke-width: 1.0;"></polygon><!--link 账号 to 管理员--><path d="M212.591,285.375 C217.815,300.901 222.553,314.982 226.236,325.928 " fill="none" id="&#x8D26;&#x53F7;-&#x7BA1;&#x7406;&#x5458;" style="stroke: #A80036; stroke-width: 1.0;"></path><polygon fill="none" points="205.887,287.401,206.143,266.213,219.156,282.936,205.887,287.401" style="stroke: #A80036; stroke-width: 1.0;"></polygon><!--link 普通用户 to 其它系统的操作功能--><path d="M86.5858,386.8693 C84.2528,402.3254 81.591,419.9595 79.5202,433.6784 " fill="none" id="&#x666E;&#x901A;&#x7528;&#x6237;-&#x5176;&#x5B83;&#x7CFB;&#x7EDF;&#x7684;&#x64CD;&#x4F5C;&#x529F;&#x80FD;" style="stroke: #A80036; stroke-width: 1.0;"></path><polygon fill="#FFFFFF" points="88.5282,374,83.6775,379.3358,86.7372,385.8656,91.5879,380.5298,88.5282,374" style="stroke: #A80036; stroke-width: 1.0;"></polygon><!--link 管理员 to 其它系统的管理功能--><path d="M239.753,386.8693 C242.231,402.3254 245.06,419.9595 247.26,433.6784 " fill="none" id="&#x7BA1;&#x7406;&#x5458;-&#x5176;&#x5B83;&#x7CFB;&#x7EDF;&#x7684;&#x7BA1;&#x7406;&#x529F;&#x80FD;" style="stroke: #A80036; stroke-width: 1.0;"></path><polygon fill="#FFFFFF" points="237.689,374,234.6896,380.5577,239.5893,385.8486,242.5887,379.2909,237.689,374" style="stroke: #A80036; stroke-width: 1.0;"></polygon><!--
+@startuml
+interface 其它系统的操作功能
+interface 其它系统的管理功能
+class 账号 {
+  name
+  nickName
+  email
+  avatar
+  createTime
+  lastTime
+  register()
+  login()
+  logout()
+  setEmail()
+  setAvatar()
+  changePassword()
+  forgetPassword()
+  getLog()
+}
+账号 <|- - 普通用户
+账号 <|- - 管理员
+普通用户 o- - 其它系统的操作功能
+管理员 o- - 其它系统的管理功能
+@enduml
+
+PlantUML version 1.2017.19(Sun Nov 12 19:46:22 CST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_131-b11
+Operating System: Windows 10
+OS Version: 10.0
+Default Encoding: GBK
+Language: zh
+Country: CN
+--></g></svg></p>
+<h2 class="mume-header" id="%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0">功能实现</h2>
+
+<h3 class="mume-header" id="%E7%94%A8%E6%88%B7%E5%87%AD%E8%AF%81-token">用户凭证 token</h3>
+
+<p>token是用户凭证，用户登陆后取得token，大部分操作先header或cookie中提取出token才允许操作。这里设定token有效时间为1小时，且重新登陆后会使旧token无效。</p>
+<div class="sequence">title:token 生成与使用
+客户端->服务器: 1.账号登陆
+Note over 服务器: 在MySQL核对账号密码正确
+Note over 服务器: 生成token并保存在redis
+服务器->客户端:2.返回用户信息与token
+Note over 客户端: 某个操作
+客户端->服务器: 3.调用某个操作API
+Note right of 客户端:请求中header或cookie包含token
+Note over 服务器:在redis验证token
+Note right of 服务器:若token失效则要求用户重新登陆
+服务器->客户端:4.返回调用API结果
+Note over 客户端: 操作成功
+</div>
+<h4 class="mume-header" id="token%E7%9A%84%E7%94%9F%E6%88%90">token的生成</h4>
+
+<p>token根据用户名name与时间time经摘要算法计算出来，并保存在redis中。为了实现同一个用户同一时间内只允许有一个token，实现时会向redis插入两条数据:</p>
+<p><?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="177px" preserveAspectRatio="none" style="width:800px;height:177px;" version="1.1" viewBox="0 0 800 177" width="800px" zoomAndPan="magnify"><defs><filter height="300%" id="f8ykq6k305vo3" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"></feGaussianBlur><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"></feColorMatrix><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"></feOffset><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"></feBlend></filter></defs><g><polygon fill="#FBFB77" filter="url(#f8ykq6k305vo3)" points="390.5,22,390.5,49.7544,778.5,49.7544,778.5,32,768.5,22,390.5,22" style="stroke: #A80036; stroke-width: 1.0;"></polygon><line style="stroke: #A80036; stroke-width: 1.0;" x1="768.5" x2="768.5" y1="22" y2="32"></line><line style="stroke: #A80036; stroke-width: 1.0;" x1="778.5" x2="768.5" y1="32" y2="32"></line><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="367" x="396.5" y="41.8979">账号abcd登陆后生成token:b0616ad8b668f33ff4e623cd70b40225</text><rect fill="#FEFECE" filter="url(#f8ykq6k305vo3)" height="55.7031" style="stroke: #A80036; stroke-width: 1.5;" width="225" x="130" y="8"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="211" x="137" y="23.752">b0616ad8b668f33ff4e623cd70b40225</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="131" x2="354" y1="28.3887" y2="28.3887"></line><text fill="#000000" font-family="sans-serif" font-size="10" lengthAdjust="spacingAndGlyphs" textLength="65" x="136" y="43.8486">name="abcd"</text><text fill="#000000" font-family="sans-serif" font-size="10" lengthAdjust="spacingAndGlyphs" textLength="80" x="136" y="57.5059">其它用户信息数据</text><rect fill="#FEFECE" filter="url(#f8ykq6k305vo3)" height="42.0459" style="stroke: #A80036; stroke-width: 1.5;" width="195" x="145" y="124"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="229" y="139.752">abcd</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="146" x2="339" y1="144.3887" y2="144.3887"></line><text fill="#000000" font-family="sans-serif" font-size="10" lengthAdjust="spacingAndGlyphs" textLength="183" x="151" y="159.8486">b0616ad8b668f33ff4e623cd70b40225</text><polygon fill="#FBFB77" filter="url(#f8ykq6k305vo3)" points="6,22,6,49.7544,95,49.7544,95,32,85,22,6,22" style="stroke: #A80036; stroke-width: 1.0;"></polygon><polygon fill="#FBFB77" points="6,22,6,49.7544,95,49.7544,95,40,129.954,36,95,32,95,32,85,22,6,22" style="stroke: #A80036; stroke-width: 1.0;"></polygon><line style="stroke: #A80036; stroke-width: 1.0;" x1="85" x2="85" y1="22" y2="32"></line><line style="stroke: #A80036; stroke-width: 1.0;" x1="95" x2="85" y1="32" y2="32"></line><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="68" x="12" y="41.8979">hashes结构</text><!--link b0616ad8b668f33ff4e623cd70b40225 to abcd--><path d="M242.5,64.001 C242.5,82.5736 242.5,106.847 242.5,123.7641 " fill="none" id="b0616ad8b668f33ff4e623cd70b40225-abcd" style="stroke: #A80036; stroke-width: 1.0;"></path><!--
+@startuml
+note "账号abcd登陆后生成token:b0616ad8b668f33ff4e623cd70b40225" as N1
+object b0616ad8b668f33ff4e623cd70b40225
+object abcd
+
+b0616ad8b668f33ff4e623cd70b40225 : name="abcd" 
+b0616ad8b668f33ff4e623cd70b40225 : 其它用户信息数据 
+
+abcd : b0616ad8b668f33ff4e623cd70b40225
+
+b0616ad8b668f33ff4e623cd70b40225- -abcd  
+
+note left of b0616ad8b668f33ff4e623cd70b40225 : hashes结构
+@enduml
+
+PlantUML version 1.2017.19(Sun Nov 12 19:46:22 CST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_131-b11
+Operating System: Windows 10
+OS Version: 10.0
+Default Encoding: GBK
+Language: zh
+Country: CN
+--></g></svg></p>
+<h4 class="mume-header" id="%E6%96%B0token%E8%A6%86%E7%9B%96%E6%97%A7token">新token覆盖旧token</h4>
+
+<p>token会在生存时间过后被redis自动删除（两条数据都删）。当在生存时间内用户重新登陆，新token覆盖旧token，流程图如下：</p>
+<p><?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="282px" preserveAspectRatio="none" style="width:158px;height:282px;" version="1.1" viewBox="0 0 158 282" width="158px" zoomAndPan="magnify"><defs><filter height="300%" id="f1tunbdbsr3r3s" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"></feGaussianBlur><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"></feColorMatrix><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"></feOffset><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"></feBlend></filter></defs><g><rect fill="#FEFECE" filter="url(#f1tunbdbsr3r3s)" height="36.3887" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="68" x="44.5" y="10"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="48" x="54.5" y="33.752">重新登陆</text><rect fill="#FEFECE" filter="url(#f1tunbdbsr3r3s)" height="36.3887" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="86" x="35.5" y="66.3887"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="45.5" y="90.1406">生成新token</text><rect fill="#FEFECE" filter="url(#f1tunbdbsr3r3s)" height="36.3887" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="137" x="10" y="122.7773"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="117" x="20" y="146.5293">通过abcd找到旧token</text><rect fill="#FEFECE" filter="url(#f1tunbdbsr3r3s)" height="36.3887" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="86" x="35.5" y="179.166"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="66" x="45.5" y="202.918">删除旧token</text><rect fill="#FEFECE" filter="url(#f1tunbdbsr3r3s)" height="36.3887" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="137" x="10" y="235.5547"></rect><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="117" x="20" y="259.3066">将abcd设置成新token</text><line style="stroke: #A80036; stroke-width: 1.5;" x1="78.5" x2="78.5" y1="46.3887" y2="66.3887"></line><polygon fill="#A80036" points="74.5,56.3887,78.5,66.3887,82.5,56.3887,78.5,60.3887" style="stroke: #A80036; stroke-width: 1.0;"></polygon><line style="stroke: #A80036; stroke-width: 1.5;" x1="78.5" x2="78.5" y1="102.7773" y2="122.7773"></line><polygon fill="#A80036" points="74.5,112.7773,78.5,122.7773,82.5,112.7773,78.5,116.7773" style="stroke: #A80036; stroke-width: 1.0;"></polygon><line style="stroke: #A80036; stroke-width: 1.5;" x1="78.5" x2="78.5" y1="159.166" y2="179.166"></line><polygon fill="#A80036" points="74.5,169.166,78.5,179.166,82.5,169.166,78.5,173.166" style="stroke: #A80036; stroke-width: 1.0;"></polygon><line style="stroke: #A80036; stroke-width: 1.5;" x1="78.5" x2="78.5" y1="215.5547" y2="235.5547"></line><polygon fill="#A80036" points="74.5,225.5547,78.5,235.5547,82.5,225.5547,78.5,229.5547" style="stroke: #A80036; stroke-width: 1.0;"></polygon><!--
+@startuml
+:重新登陆;
+:生成新token;
+:通过abcd找到旧token;
+:删除旧token;
+:将abcd设置成新token;
+@enduml
+
+PlantUML version 1.2017.19(Sun Nov 12 19:46:22 CST 2017)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_131-b11
+Operating System: Windows 10
+OS Version: 10.0
+Default Encoding: GBK
+Language: zh
+Country: CN
+--></g></svg></p>
+<h3 class="mume-header" id="%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</h3>
+
+<p>普通用户与管理员通过权限组id进行区分。</p>
+<ol start="0">
+<li>普通用户：正常使用功能</li>
+<li>管理员：拥有管理权限</li>
+</ol>
+<h4 class="mume-header" id="%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</h4>
+
+<p>TODO:如何让部分操作只允许管理员使用，还有待思考设计。</p>
+<h3 class="mume-header" id="%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</h3>
+
+<p>输旧密码与新密码，旧密码正确才会修改成新密码。</p>
+<h3 class="mume-header" id="%E4%BF%AE%E6%94%B9%E9%AA%8C%E8%AF%81%E9%82%AE%E7%AE%B1%E6%B5%81%E7%A8%8B">修改验证邮箱流程</h3>
+
+<p>分两个步骤：</p>
+<ol>
+<li>重输密码验证成功后，由服务器生成sensitiveToken，并给目标邮箱发送邮件。</li>
+<li>用户点击邮件里的url（包含sensitiveToken与所要设置的email地址），由服务器修改数据库。<br>
+sensitiveToken的组成：sensitiveToken:name，有效时间30分钟。</li>
+</ol>
+<div class="sequence">用户->服务器:1.重输密码正确后修改邮箱
+Note over 服务器:生成sensitiveToken
+服务器->用户邮箱:2.发送验证邮件
+用户-->用户邮箱:3.点击邮件中的网址
+用户邮箱->服务器:4.修改邮箱成功
+</div>
+<h3 class="mume-header" id="%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">忘记密码流程</h3>
+
+<p>用户填入邮箱，从数据库里寻找邮箱并修改随机密码，将用户名与新的随机密码一同发送至邮箱当中。</p>
+<div class="sequence">Note over 用户:若用户之前没有设置用户邮箱，只能联系管理员
+用户->服务器:1.忘记密码填写用户邮箱
+Note over 服务器:由用户邮箱找到用户名
+Note over 服务器:生成新的用户密码
+服务器->用户邮箱:2.发送带有用户名与密码的邮件
+用户-->用户邮箱:3.获取用户名与密码
+
+</div>
+<h3 class="mume-header" id="%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E5%A4%B4%E5%83%8F">修改用户头像</h3>
+
+<p>头像图片上传只允许上传指定图片格式，上传后以uuid命名。图片上传后由nginx直接开启缓存可直接GET访问取得，所以程序与nginx路径要一致。如 nginx的图片访问路径为/var/www/images,那么程序的配置文件imagePath也应当为此值。图片上传后会返回图片名，用户头像指向新的图片名。<br>
+【有待优化】将有用的图片移入非临时文件夹，临时文件夹里的图片可以定期删除以节省空间。</p>
+<h3 class="mume-header" id="%E8%B4%A6%E5%8F%B7%E6%97%A5%E5%BF%97">账号日志</h3>
+
+<p>所有请求最原始的数据都由nginx保存下来，系统本身日志文件保存到/log，每个用户的动作的日志文件保存到/log/user/{name}.log。</p>
+<h2 class="mume-header" id="%E5%94%AF%E4%B8%80%E6%80%A7%E6%A3%80%E6%B5%8Btodo">唯一性检测（TODO）</h2>
+
+<p>用户注册时的账号名，设置用户的邮箱名，用户昵称这三个都需要保证唯一性，不可重复。<br>
+在redis中有三个set结构数据，保存已经存在的账号名，邮箱名，用户昵称，用于唯一性检测，防止重复使用。<br>
+redis初次启动时从数据库中读取，并且mysql在这三个字段列设置udf，保证redis保持与mysql相同。</p>
+<h2 class="mume-header" id="%E5%AE%89%E5%85%A8todo">安全（TODO）</h2>
+
+<p>不使用验证码，采用记录IP地址，每个IP地址每分钟请求不超过50次。（待做）后期可用安全检测模块如snyk,nsp等检测一下。</p>
+
+      </div>
+      <div class="md-sidebar-toc"><ul>
+<li><a href="#%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F">用户系统</a>
+<ul>
+<li><a href="#%E9%9C%80%E6%B1%82">需求</a></li>
+<li><a href="#%E5%8A%9F%E8%83%BD%E5%AE%9E%E7%8E%B0">功能实现</a>
+<ul>
+<li><a href="#%E7%94%A8%E6%88%B7%E5%87%AD%E8%AF%81-token">用户凭证 token</a>
+<ul>
+<li><a href="#token%E7%9A%84%E7%94%9F%E6%88%90">token的生成</a></li>
+<li><a href="#%E6%96%B0token%E8%A6%86%E7%9B%96%E6%97%A7token">新token覆盖旧token</a></li>
+</ul>
+</li>
+<li><a href="#%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</a>
+<ul>
+<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E9%AA%8C%E8%AF%81%E9%82%AE%E7%AE%B1%E6%B5%81%E7%A8%8B">修改验证邮箱流程</a></li>
+<li><a href="#%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">忘记密码流程</a></li>
+<li><a href="#%E4%BF%AE%E6%94%B9%E7%94%A8%E6%88%B7%E5%A4%B4%E5%83%8F">修改用户头像</a></li>
+<li><a href="#%E8%B4%A6%E5%8F%B7%E6%97%A5%E5%BF%97">账号日志</a></li>
+</ul>
+</li>
+<li><a href="#%E5%94%AF%E4%B8%80%E6%80%A7%E6%A3%80%E6%B5%8Btodo">唯一性检测（TODO）</a></li>
+<li><a href="#%E5%AE%89%E5%85%A8todo">安全（TODO）</a></li>
+</ul>
+</li>
+</ul>
+</div>
+      <a id="sidebar-toc-btn">≡</a>
+    </body>
+    
+    
+    
+    
+    <script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>
+    <script>
+(function bindTaskListEvent() {
+  var taskListItemCheckboxes = document.body.getElementsByClassName('task-list-item-checkbox')
+  for (var i = 0; i < taskListItemCheckboxes.length; i++) {
+    var checkbox = taskListItemCheckboxes[i]
+    var li = checkbox.parentElement
+    if (li.tagName !== 'LI') li = li.parentElement
+    if (li.tagName === 'LI') {
+      li.classList.add('task-list-item')
+    }
+  }
+}())    
+</script>
+    
+<script>
+
+var sidebarTOCBtn = document.getElementById('sidebar-toc-btn')
+sidebarTOCBtn.addEventListener('click', function(event) {
+  event.stopPropagation()
+  if (document.body.hasAttribute('html-show-sidebar-toc')) {
+    document.body.removeAttribute('html-show-sidebar-toc')
+  } else {
+    document.body.setAttribute('html-show-sidebar-toc', true)
+  }
+})
+</script>
+      
+  </html>
