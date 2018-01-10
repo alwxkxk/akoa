@@ -226,7 +226,7 @@ code.language-yaml {
 </li>
 <li><a href="#%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</a>
 <ol>
-<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81">权限验证</a></li>
 </ol>
 </li>
 <li><a href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</a></li>
@@ -356,14 +356,19 @@ Country: CN
 --></g></svg></p>
 <h3 class="mume-header" id="%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</h3>
 
-<p>普通用户与管理员通过权限组id进行区分。</p>
+<p>普通用户与管理员通过权限组id(group_id)进行区分。</p>
 <ol start="0">
 <li>普通用户：正常使用功能</li>
 <li>管理员：拥有管理权限</li>
 </ol>
-<h4 class="mume-header" id="%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</h4>
+<h4 class="mume-header" id="%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81">权限验证</h4>
 
-<p>TODO:如何让部分操作只允许管理员使用，还有待思考设计。</p>
+<p>权限管理并不需要太细，按组分权限即可。</p>
+<div class="sequence">管理员->服务器: 某个需要权限验证的操作
+Note over 服务器:根据token从redis中取出其group_id
+Note over 服务器:在权限列表验证这操作是否包含此group_id
+服务器-->管理员:操作成功
+</div>
 <h3 class="mume-header" id="%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</h3>
 
 <p>输旧密码与新密码，旧密码正确才会修改成新密码。</p>
@@ -423,7 +428,7 @@ redis初次启动时从数据库中读取，并且mysql在这三个字段列设�
 </li>
 <li><a href="#%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E4%B8%8E%E7%AE%A1%E7%90%86%E5%91%98">普通用户与管理员</a>
 <ul>
-<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81todo">权限验证（TODO）</a></li>
+<li><a href="#%E6%9D%83%E9%99%90%E9%AA%8C%E8%AF%81">权限验证</a></li>
 </ul>
 </li>
 <li><a href="#%E4%BF%AE%E6%94%B9%E5%AF%86%E7%A0%81%E6%B5%81%E7%A8%8B">修改密码流程</a></li>
