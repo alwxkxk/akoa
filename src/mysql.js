@@ -1,10 +1,9 @@
 const mysql = require('mysql')
 const _ = require('lodash')
 const mysqlConfig = require('../config/config.js').mysqlConfig
-const sqlQuery = require('../config/sql-query.js')
 
 var pool = mysql.createPool(mysqlConfig)
-initTable()
+
 // pool.on('acquire', function (connection) {
 //   console.log('Connection %d acquired', connection.threadId)
 // })
@@ -146,40 +145,17 @@ function updated (tableName, setList, whereList) {
  * 结束连接池
  *
  */
-function end () {
+function quit () {
   pool.end(function (err) {
     if (err) console.log(err)
   })
 }
 
-/**
- * 初始化数据库，创建表格
- *
- */
-async function initTable () {
-  let tablesConfig = {
-    'user': sqlQuery.createUserTable // 没有user 表就使用createUserTable 创建
-  }
-  // 检测数据库有没有表，没有就初始化，创建一堆表。
-  let sqlString = mysql.format('SELECT * FROM information_schema.tables WHERE table_schema=?;', [mysqlConfig.database])
-  // 先取得所有表名
-  let tables = _.map(await query(sqlString), function (o) { return o.TABLE_NAME })
-  // 对比，取得所缺乏的表
-  let lackTable = _.difference(_.keys(tablesConfig), tables)
-  // 创建所缺乏的表
-  _.forEach(lackTable, function (value) {
-    console.log('create Table' + value)
-    query(tablesConfig[value])
-      .then(() => { console.log('create table:', value) })
-      .catch(err => { console.log(err) })
-  })
-}
-
 module.exports = {
-  initTable: initTable,
+  query: query,
   insert: insert,
   read: read,
-  end: end,
+  quit: quit,
   updated: updated,
   sqlDelete: sqlDelete
 }

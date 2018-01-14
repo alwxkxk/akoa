@@ -134,6 +134,15 @@ client.deleteSensitiveToken = function deleteSensitiveToken (sensitiveToken) {
   client.del(sensitiveToken)
 }
 
+/**
+ * 通过token获取权限组id
+ *
+ * @param {string} token
+ */
+client.getGroupIdByToken = function deleteSensitiveToken (token) {
+  client.hgetAsync(token, 'group_id')
+}
+
 // TODO:用于防重复检测账号名邮箱昵称的缓存
 
 // 结束连接
