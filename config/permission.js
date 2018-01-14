@@ -26,6 +26,11 @@ function checkPermisssion (action, groupId) {
   else return true
 }
 
+function getGroupId (groupName) {
+  return group[groupName]
+}
+
 module.exports = {
-  checkPermisssion: checkPermisssion
+  checkPermisssion: checkPermisssion,
+  getGroupId: getGroupId
 }

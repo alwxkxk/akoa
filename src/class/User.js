@@ -2,7 +2,7 @@ const _ = require('lodash')
 const mysql = require('../mysql.js')
 const common = require('../common.js')
 const redis = require('../redis.js')
-const GROUP = require('../../config/authentication.js').GROUP
+const getGroupId = require('../../config/permission.js').getGroupId
 const bunyan = require('bunyan')
 const path = require('path')
 const readline = require('readline')
@@ -19,12 +19,12 @@ class User {
    * @returns {Promise} 返回Promise对象，resolve '账号注册成功' ,reject '账号名重复'||e.sqlMessage
    * @memberof User
    */
-  static register (name, password) {
+  static register (name, password, gruopName = 'user') {
     // TODO:优化：前端应提供 先检测有无重名的
     // 前端应将password先加盐md5一次再传输到后台
     const time = common.now()
     // 加盐后再md5一次
-    return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, common.akoaMd5(password), name, time, time, GROUP['user']])
+    return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, common.akoaMd5(password), name, time, time, getGroupId(gruopName)])
     .then(v => { return Promise.resolve('账号注册成功') })
     .catch(e => {
       if (e.code === 'ER_DUP_ENTRY') return Promise.reject('账号名重复')
