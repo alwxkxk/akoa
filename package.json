@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/api.test.js"
+    "test": "mocha --require intelli-espower-loader --delay test/api.test.js",
+    "init":"node src/init/init.js"
   },
   "standard": {
     "globals": [
