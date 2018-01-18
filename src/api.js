@@ -3,7 +3,6 @@ const Router = require('koa-better-router')
 const router = Router().loadMethods()
 const body = require('koa-better-body')
 const _ = require('lodash')
-const User = require('./class/User.js')
 const common = require('./common.js')
 const Joi = require('joi')
 const asyncBusboy = require('async-busboy')
@@ -12,7 +11,10 @@ const path = require('path')
 const fs = require('fs')
 const util = require('util')
 const emailer = require('./emailer.js')
+const log = require('./log.js')
 
+const User = require('./class/User.js')
+const Administrator = require('./class/Administrator.js')
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 
 /**
@@ -30,6 +32,8 @@ function setAll (ctx, next) {
   if (!ctx.$token) {
     ctx.body = common.httpResponse(2003)// 若token不存在 就默认设置返回 2003错误
   }
+  // 记录API请求 包含url及fields
+  log.info({url: ctx.method + ' ' + ctx.url, fileds: ctx.request.fields, type: 'API'}, 'API请求')
   return next()
 }
 
@@ -136,16 +140,6 @@ router.del('/token', body(), setAll, async function (ctx, next) {
   })
   return next()
 })
-
-// DELETE /user 删除账号 暂时只能由管理员操作
-// router.del('/user', body(), setAll, function * (next) {
-//   // 从header中提取出token  只有管理员与或属账号的token才能进行账号注销
-//   const token = this.request.header.token
-//   let name = this.request.url.split('/').pop()// 分离并取最后的/:id
-//   // TODO:敏感操作，应该弹窗提示 是否确认这样做 或许甚至理当输入密码才能做。
-//   this.response.body = common.httpResponse(0)
-//   yield next
-// })
 
 // GET /api/log  取得用户日志
 // request header or cookie 'token'
@@ -305,6 +299,18 @@ router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async functio
   })
   .catch(err => { ctx.body = '修改邮件失败：' + err })
   ctx.type = 'html'
+  return next()
+})
+
+// ------------------- 管理员相关的API----------------------------
+// DELETE /user/:name 删除账号 暂时只能由管理员操作
+// request header or cookie 'token'
+router.del('/user/:name', body(), setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+  const name = ctx.params.name
+  await Administrator.deleteUser(ctx.$token, name)
+  .then(() => { ctx.body = common.httpResponse(0) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 })
 

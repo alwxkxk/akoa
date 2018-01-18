@@ -1,14 +1,18 @@
 const mysql = require('mysql')
 const _ = require('lodash')
 const mysqlConfig = require('../config/config.js').mysqlConfig
-
+const log = require('./log.js')
 var pool = mysql.createPool(mysqlConfig)
 
 // pool.on('acquire', function (connection) {
 //   console.log('Connection %d acquired', connection.threadId)
 // })
 pool.on('connection', function (connection) {
-  console.log('Connection %d built', connection.threadId)
+  // console.log('Connection %d built', connection.threadId)
+  connection.on('error', function (err) {
+    console.log(err) // 'ER_BAD_DB_ERROR'
+    log.error(err)
+  })
 })
 // pool.on('enqueue', function () {
 //   console.log('Waiting for available connection slot')

@@ -5,7 +5,7 @@ const redis = require('redis')
 const bluebird = require('bluebird')
 const common = require('./common.js')
 const md5 = require('md5')
-
+const log = require('./log.js')
 let client = redis.createClient(redisConfig)
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
@@ -13,7 +13,8 @@ bluebird.promisifyAll(redis.RedisClient.prototype)
 bluebird.promisifyAll(redis.Multi.prototype)
 
 client.on('error', function (err) {
-  console.log('Error ' + err)
+  console.log(err)
+  log.error(err)
 })
 
 client.on('connect', function (err) {
