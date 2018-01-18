@@ -22,7 +22,7 @@ async function init () {
   }
   if (errorFlag) console.log('初始化失败')
   else console.log('初始化成功')
-  mysql.end()
+  mysql.quit()
   redis.quit()
 }
 
@@ -67,7 +67,7 @@ function initDatabase () {
       if (err) {
         console.error('error connecting: ' + err.stack)
         errorFlag = true
-        reject('连接数据库失败。')
+        return reject('连接数据库失败。')
       }
       resolve()
       console.log('连接数据库成功')
