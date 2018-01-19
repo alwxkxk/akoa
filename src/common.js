@@ -4,7 +4,7 @@ const _ = require('lodash')
 const errorCodeList = require('../config/error-code.js')
 const uuidv4 = require('uuid/v4')
 
-let common = {
+const common = {
   /**
    * 加后缀再md5
    *

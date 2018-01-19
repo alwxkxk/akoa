@@ -10,4 +10,6 @@ cd akoa
 npm install 
 #先配置config/config.js
 pm2 start /var/akoa/src/app.js --name akoa --max-memory-restart 256M
+#查看状态
+pm2 imonit
 ```

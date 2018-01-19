@@ -15,7 +15,6 @@ app.use(async (ctx, next) => {
   await next()
   const ms = Date.now() - start
   const message = `${ctx.method} ${ctx.url} - ${ms}ms`
-  if (STDOUT) console.log(message)
   log.info({message: message})
 })
 

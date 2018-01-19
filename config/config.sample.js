@@ -1,7 +1,10 @@
+const path = require('path')
+const os = require('os')
+
 let config = {
   PORT: 7999, // 程序启动所监听的端口
   serverUrl: 'http://www.example.com:8999', // nginx所配置的地址与端口
-  ImagePath: '/var/www/images',
+  ImagePath: os.platform() === 'win32' ? path.join(__dirname, '../../images') : '/var/www/images',
   ImageType: ['.jpg', '.JPG', '.png'],
   STDOUT: true, // 是否打印出来
   // ------- mysql ------------
