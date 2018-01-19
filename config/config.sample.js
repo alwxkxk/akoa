@@ -3,6 +3,7 @@ let config = {
   serverUrl: 'http://www.example.com:8999', // nginx所配置的地址与端口
   ImagePath: '/var/www/images',
   ImageType: ['.jpg', '.JPG', '.png'],
+  STDOUT: true, // 是否打印出来
   // ------- mysql ------------
   mysqlConfig: {
     host: '',

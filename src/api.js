@@ -12,6 +12,7 @@ const fs = require('fs')
 const util = require('util')
 const emailer = require('./emailer.js')
 const log = require('./log.js')
+const STDOUT = require('../config/config.js').STDOUT
 
 const User = require('./class/User.js')
 const Administrator = require('./class/Administrator.js')
@@ -32,8 +33,6 @@ function setAll (ctx, next) {
   if (!ctx.$token) {
     ctx.body = common.httpResponse(2003)// 若token不存在 就默认设置返回 2003错误
   }
-  // 记录API请求 包含url及fields
-  log.info({url: ctx.method + ' ' + ctx.url, fileds: ctx.request.fields, type: 'API'}, 'API请求')
   return next()
 }
 
@@ -67,6 +66,9 @@ function checkParams (ctx, requiredList) {
   if (result.error) {
     const details = { details: _.map(result.error.details, 'message') }
     ctx.body = common.httpResponse(1001, details)
+    if (STDOUT) console.log(details)
+    const detailsString = JSON.stringify(details)
+    log.warn(`${ctx.method} ${ctx.url} - ${detailsString}`)
   } else {
     ctx.$requestBody = requestBody
   }
