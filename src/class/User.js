@@ -224,14 +224,14 @@ class User {
  * @memberof User
  */
   static changeNickName (token, nickName) {
-  return redis.getNameByToken(token)
-    .then((name) => {
-      return mysql.updated('user', ['nick_name', nickName], ['name', name])
-    })
-    .then(v => {
-      return Promise.resolve('成功修改昵称')
-    })
-}
+    return redis.getNameByToken(token)
+      .then((name) => {
+        return mysql.updated('user', ['nick_name', nickName], ['name', name])
+      })
+      .then(v => {
+        return Promise.resolve('成功修改昵称')
+      })
+  }
 }
 
 /**
