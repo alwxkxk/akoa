@@ -41,7 +41,8 @@ const paramsRequireList = {
   password: Joi.string().required(),
   newPassword: Joi.string().required(),
   email: Joi.string().email().required(),
-  sensitiveToken: Joi.string().required()
+  sensitiveToken: Joi.string().required(),
+  nickName: Joi.string().required()
 }
 
 /**
@@ -56,6 +57,7 @@ const paramsRequireList = {
  */
 function checkParams (ctx, requiredList) {
   const requestBody = ctx.request.fields
+  if (STDOUT) console.log('fields:', requestBody)
   const require = _.pick(paramsRequireList, requiredList)
   if (_.size(require) !== _.size(requiredList)) {
     throw 'requiredList必须在(' + _.keys(paramsRequireList) + '),' + requiredList + '有误'
@@ -301,6 +303,21 @@ router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async functio
   })
   .catch(err => { ctx.body = '修改邮件失败：' + err })
   ctx.type = 'html'
+  return next()
+})
+
+// put /api/nickName 修改用户昵称
+// request header or cookie 'token',body: {nickName:''}
+router.put('/nickName', body(), setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+
+  // 参数检查
+  checkParams(ctx, ['nickName'])
+  if (!ctx.$requestBody) return next()
+
+  await User.changeNickName(ctx.$token, ctx.$requestBody.nickName)
+  .then(v => { ctx.body = common.httpResponse(0) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 })
 

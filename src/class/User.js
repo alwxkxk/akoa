@@ -197,7 +197,7 @@ class User {
  *用户忘记密码，通过邮箱找到用户，修改成随机密码并发送给用户。
  *
  * @static
- * @param {string} email
+ * @param {string} email 邮箱地址
  * @memberof User
  */
   static forgetPassword (email) {
@@ -214,7 +214,24 @@ class User {
     })
   }
 
-  // 修改昵称
+/**
+ * 修改昵称
+ *
+ * @static
+ * @param {string} token  用户凭证
+ * @param {string} nickName 昵称
+ * @returns {Promise}
+ * @memberof User
+ */
+  static changeNickName (token, nickName) {
+  return redis.getNameByToken(token)
+    .then((name) => {
+      return mysql.updated('user', ['nick_name', nickName], ['name', name])
+    })
+    .then(v => {
+      return Promise.resolve('成功修改昵称')
+    })
+}
 }
 
 /**
