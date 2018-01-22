@@ -2,11 +2,13 @@
 const redisConfig = require('../config/config.js').redisConfig
 const EXPIRE = require('../config/config.js').EXPIRE
 const redis = require('redis')
+const mysql = require('./mysql.js')
 const bluebird = require('bluebird')
 const common = require('./common.js')
 const md5 = require('md5')
 const log = require('./log.js')
 let client = redis.createClient(redisConfig)
+const checkList = require('../config/config.js').checkList
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
 // 到此，可以使用加Async的后缀实现promise化 client.getAsync('foo').then(function(res) {
@@ -141,11 +143,53 @@ client.deleteSensitiveToken = function deleteSensitiveToken (sensitiveToken) {
  * @param {string} token
  */
 client.getGroupIdByToken = function deleteSensitiveToken (token) {
-  client.hgetAsync(token, 'group_id')
+  return client.hgetAsync(token, 'group_id')
 }
 
-// TODO:用于防重复检测账号名邮箱昵称的缓存
+/**
+ * 检查是否重复
+ *
+ * @param {string} key 要检查的键名如name,nick_name,email
+ * @param {string} value 要检查的值
+ * @returns {Promise} 当不存在时即不重复 返回resolve
+ */
+client.checkNoRepeat = function checkNoRepeat (key, value) {
+  if (checkList.indexOf(key) === -1) return Promise.reject('键名错误')
+  return client.sismemberAsync(key, value)
+  .then(v => {
+    console.log(key, value, v, typeof v)
+    if (v === 1) {
+      return Promise.reject('该值重复')
+    } else return Promise.resolve('通过检测')
+  })
+}
 
+  /**
+   * 异步更新 检测列表
+   *
+   */
+client.updateCheckList = function updateCheckList () {
+  const checkListObj = {}
+  checkList.forEach((value) => {
+    checkListObj[value] = []
+  })
+  mysql.read('user', checkList)
+    .then(reads => { // 将checkList的内容全部保存到checkListObj
+      _.forEach(reads, function (object) {
+        _.forEach(object, function (value, key) {
+          if (value) checkListObj[key].push(value)
+        })
+      })
+      console.log(`异步更新检测列表:`, checkListObj)
+      _.forEach(checkListObj, function (value, key) { // 更新到redis
+        if (value.length > 0) client.SADD(key, ...value)
+      })
+    })
+    .catch(err => {
+      console.error(err)
+      log.error(err)
+    })
+}
 // 结束连接
 // client.quit()
 module.exports = client
