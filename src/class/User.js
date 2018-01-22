@@ -61,10 +61,11 @@ class User {
       const time = common.now()
       mysql.updated('user', ['last_time', time], ['name', name]) // 更新最后活跃时间
       user.token = values[0]
-      userLog(name, {time: common.now(), action: '登陆'})
+      userLog(name, {time: time, action: '登陆'})
       return Promise.resolve(user)// 将用户信息传出以便响应返回
     })
     .catch(e => {
+      console.log(e)
       return Promise.reject(e)
     })
   }

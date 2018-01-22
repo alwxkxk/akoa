@@ -1,5 +1,6 @@
 const PERMISESSION = {
-  'deleteUser': ['administrator']// 删除账号 - [管理员]
+  'deleteUser': ['administrator'], // 删除账号 - [管理员]
+  'getUserList': ['administrator']
 }
 
 let group = {// 权限组id及对应身份
