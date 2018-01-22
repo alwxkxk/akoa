@@ -13,6 +13,7 @@ const util = require('util')
 const emailer = require('./emailer.js')
 const log = require('./log.js')
 const STDOUT = require('../config/config.js').STDOUT
+const redis = require('./redis.js')
 
 const User = require('./class/User.js')
 const Administrator = require('./class/Administrator.js')
@@ -322,7 +323,18 @@ router.put('/nickName', body(), setAll, async function (ctx, next) {
 })
 
 // ------------------- 管理员相关的API----------------------------
-// DELETE /user/:name 删除账号 暂时只能由管理员操作
+// GET /api/userList 管理员获取用户列表
+// request header or cookie 'token'
+router.get('/userList', body(), setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+
+  await Administrator.getUserList(ctx.$token)
+  .then(userList => { ctx.body = common.httpResponse(0, userList) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
+  return next()
+})
+
+// DELETE /api/user/:name 删除账号 暂时只能由管理员操作
 // request header or cookie 'token'
 router.del('/user/:name', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
@@ -375,7 +387,7 @@ router.get('/image/:imageName', setAll, async function (ctx, next) {
 })
 
 router.get('/checkNoRepeat/:key/:value', async function (ctx, next) {
-  await common.checkNoRepeat(ctx.params.key, ctx.params.value)
+  await redis.checkNoRepeat(ctx.params.key, ctx.params.value)
   .then(v => {
     console.log(v)
     ctx.body = common.httpResponse(0, '通过检测')
