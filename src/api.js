@@ -374,5 +374,16 @@ router.get('/image/:imageName', setAll, async function (ctx, next) {
   return next()
 })
 
+router.get('/checkNoRepeat/:key/:value', async function (ctx, next) {
+  await common.checkNoRepeat(ctx.params.key, ctx.params.value)
+  .then(v => {
+    console.log(v)
+    ctx.body = common.httpResponse(0, '通过检测')
+  })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
+  ctx.type = 'json'
+  return next()
+})
+
 api.extend(router)
 module.exports = api

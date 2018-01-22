@@ -28,6 +28,7 @@ let config = {
     password: null
   },
   EXPIRE: 3600, // redis缓存的生存时间 1h,1*60*60
+  checkList: ['name', 'nick_name', 'email'], // 用于重复检测，同时禁止其它用户以这些用户名注册
     // ------ email ---------
   emailConfig: {
     host: '',

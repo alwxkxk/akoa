@@ -8,6 +8,7 @@ const path = require('path')
 const readline = require('readline')
 const fs = require('fs')
 const emailer = require('../emailer.js')
+const checkList = require('../../config/config.js').checkList
 
 class User {
   /**
@@ -23,6 +24,12 @@ class User {
     // TODO:优化：前端应提供 先检测有无重名的
     // 前端应将password先加盐md5一次再传输到后台
     const time = common.now()
+
+    if (checkList.indexOf(name) !== -1) {
+      // 禁止使用name,nick_name,email等用户名来注册账号，以防登陆时与redis的检查列表相冲突
+      return Promise.reject('此用户名禁止使用')
+    }
+
     // 加盐后再md5一次
     return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, common.akoaMd5(password), name, time, time, getGroupId(gruopName)])
     .then(v => { return Promise.resolve('账号注册成功') })
