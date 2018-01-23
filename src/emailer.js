@@ -10,10 +10,10 @@ const log = require('./log.js')
 /**
  * 发送邮件
  *
- * @param {string} to 收邮地址
- * @param {string} subject 主题
- * @param {string} text 内容
- * @param {string} html html内容
+ * @param {String} to 收邮地址
+ * @param {String} subject 主题
+ * @param {String} text 内容
+ * @param {String} html html内容
  */
 function sentEmail (to, subject, text, html) {
   let mailOptions = {
@@ -47,8 +47,8 @@ function sentEmail (to, subject, text, html) {
 /**
  * 用户发送 设置邮箱的邮件
  *
- * @param {string} to 目标邮箱
- * @param {string} sensitiveToken
+ * @param {String} to 目标邮箱
+ * @param {String} sensitiveToken
  */
 function userSetEmail (to, sensitiveToken) {
   const text = '你好，akoa设置邮箱，点击' + serverUrl + '/api/sensitiveToken/' + sensitiveToken + '/email/' + to + ' ,设置你的用户邮箱。（如果不是你本人操作，请勿点击。）'

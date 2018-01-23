@@ -15,8 +15,8 @@ class User {
    * 注册账号
    *
    * @static
-   * @param {string} name 账号名
-   * @param {string} password 已经被前端md5过一次的密码
+   * @param {String} name 账号名
+   * @param {String} password 已经被前端md5过一次的密码
    * @returns {Promise} 返回Promise对象，resolve '账号注册成功' ,reject '账号名重复'||e.sqlMessage
    * @memberof User
    */
@@ -43,8 +43,8 @@ class User {
    * 账号登陆
    *
    * @static
-   * @param {string} name 账号名
-   * @param {string} password 已经被前端md5过一次的密码
+   * @param {String} name 账号名
+   * @param {String} password 已经被前端md5过一次的密码
    * @returns {Promise} 返回Promise对象，resolve {token} ,reject '账号不存在或密码错误'||e
    * @memberof User
    */
@@ -74,7 +74,7 @@ class User {
    * 退出登陆，删除token
    *
    * @static
-   * @param {string} token 用户凭证
+   * @param {String} token 用户凭证
    * @returns {Promise}
    * @memberof User
    */
@@ -92,7 +92,7 @@ class User {
    * 取得当前用户的用户日志
    *
    * @static
-   * @param {string} token 用户凭证
+   * @param {String} token 用户凭证
    * @returns {Promise} logList 数组
    * @memberof User
    */
@@ -122,8 +122,8 @@ class User {
    * 验证当前用户密码，返回sensitiveToken
    *
    * @static
-   * @param {string} token 用户凭证
-   * @param {string} password 密码
+   * @param {String} token 用户凭证
+   * @param {String} password 密码
    * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
    * @memberof User
    */
@@ -142,9 +142,9 @@ class User {
    * 修改密码
    *
    * @static
-   * @param {string} token 用户凭证
-   * @param {string} oldPassword 旧密码
-   * @param {string} newPassword 新密码
+   * @param {String} token 用户凭证
+   * @param {String} oldPassword 旧密码
+   * @param {String} newPassword 新密码
    * @returns {Promise}
    * @memberof User
    */
@@ -169,8 +169,8 @@ class User {
    * 设备用户邮箱
    *
    * @static
-   * @param {string} sensitiveToken 敏感操作token
-   * @param {string} email 邮箱地址
+   * @param {String} sensitiveToken 敏感操作token
+   * @param {String} email 邮箱地址
    * @returns {Promise}
    * @memberof User
    */
@@ -186,8 +186,8 @@ class User {
    * 修改头像
    *
    * @static
-   * @param {string} token 用户凭证
-   * @param {string} imageName 图片文件名
+   * @param {String} token 用户凭证
+   * @param {String} imageName 图片文件名
    * @returns {Promise}
    * @memberof User
    */
@@ -205,7 +205,7 @@ class User {
  *用户忘记密码，通过邮箱找到用户，修改成随机密码并发送给用户。
  *
  * @static
- * @param {string} email 邮箱地址
+ * @param {String} email 邮箱地址
  * @memberof User
  */
   static forgetPassword (email) {
@@ -226,8 +226,8 @@ class User {
  * 修改昵称
  *
  * @static
- * @param {string} token  用户凭证
- * @param {string} nickName 昵称
+ * @param {String} token  用户凭证
+ * @param {String} nickName 昵称
  * @returns {Promise}
  * @memberof User
  */
@@ -245,9 +245,9 @@ class User {
 /**
  * 用户专用 日志记录
  *
- * @param {string} name 用户名
+ * @param {String} name 用户名
  * @param {any} data 所要记录的数据
- * @param {string} [level='info'] 日志等级 fatal,error,warn,info,debug,trace
+ * @param {String} [level='info'] 日志等级 fatal,error,warn,info,debug,trace
  */
 function userLog (name, data, level = 'info') {
   if (['fatal', 'error', 'warn', 'info', 'debug', 'trace'].indexOf(level) === -1) {

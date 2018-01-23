@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/api.test.js",
-    "init":"node src/init/init.js"
+    "test": "mocha --require intelli-espower-loader --delay test/temporary.test.js",
+    "init": "node src/init/init.js"
   },
   "standard": {
     "globals": [
@@ -32,6 +32,7 @@
     "async-busboy": "^0.6.2",
     "bluebird": "^3.5.1",
     "bunyan": "^1.8.12",
+    "chalk": "^2.3.0",
     "joi": "^13.0.2",
     "koa": "^2.3.0",
     "koa-better-body": "^3.0.4",

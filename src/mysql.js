@@ -24,7 +24,7 @@ pool.on('connection', function (connection) {
 /**
  * 执行sql语句，返回Promise对象
  * 注意，此函数没有转义，只允许内部使用，不能接收账号的sql语句以防注入攻击。
- * @param {string} queryString 来自内容的SQL语句
+ * @param {String} queryString 来自内容的SQL语句
  * @returns {Promise} 返回Promise对象，resolve results,reject err
  */
 function query (queryString) {
@@ -39,7 +39,7 @@ function query (queryString) {
 /**
  * 向某个表插入行
  *
- * @param {string} tableName 表名
+ * @param {String} tableName 表名
  * @param {string|array} column 列表值
  * @param {string|array} value 值
  * @returns {Promise} 返回Promise对象，resolve results,reject err
@@ -59,7 +59,7 @@ function insert (tableName, column, value) {
 /**
  *删除行
  *
- * @param {string} tableName 表名
+ * @param {String} tableName 表名
  * @param {array} whereList where列表
  * @returns {Promise} 返回Promise对象，resolve results,reject err
  */
@@ -87,7 +87,7 @@ function sqlDelete (tableName, whereList) {
 /**
  * 从表中读取所需值
  *
- * @param {string} tableName 表名
+ * @param {String} tableName 表名
  * @param {array} selectList 想要获取的值
  * @param {array} whereList where列表
  * @returns {Promise} 返回Promise对象，resolve results,reject err
@@ -117,7 +117,7 @@ function read (tableName, selectList, whereList) {
 /**
  * 更新表
  *
- * @param {string} tableName 表名
+ * @param {String} tableName 表名
  * @param {array} setList 想要更新的值
  * @param {array} whereList where列表
  * @returns {Promise} 返回Promise对象，resolve results,reject err

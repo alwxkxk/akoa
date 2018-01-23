@@ -11,7 +11,7 @@ class Administrator extends User {
    * 删除账号
    *
    * @static
-   * @param {string} name 要删除的用户名
+   * @param {String} name 要删除的用户名
    * @returns {Promise}
    * @memberof Administrator
    */
@@ -32,7 +32,7 @@ class Administrator extends User {
    * 获取所有用户列表
    *
    * @static
-   * @param {string} name 要删除的用户名
+   * @param {String} name 要删除的用户名
    * @returns {Promise}
    * @memberof Administrator
    */
@@ -50,8 +50,8 @@ class Administrator extends User {
 /**
  * 权限验证
  *
- * @param {string} action
- * @param {string} token
+ * @param {String} action
+ * @param {String} token
  * @returns {Promise}
  */
 function authentication (action, token) {

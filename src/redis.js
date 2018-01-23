@@ -37,7 +37,7 @@ client.on('end', function (err) {
 /**
  * 以name创建两条缓存,设置生存时间，分别是name->token,token->user，且会将旧token删除。
  *
- * @param {string} user 账号数据
+ * @param {String} user 账号数据
  * @returns {Promise} 返回Promise对象，resolve values[token,reply,reply],reject err
  */
 client.setToken = async function setToken (user) {
@@ -64,7 +64,7 @@ client.setToken = async function setToken (user) {
 /**
  * 以name创建sensitiveToken
  *
- * @param {string} name 账号名
+ * @param {String} name 账号名
  * @returns {Promise} 返回Promise对象，resolve ${sensitiveToken},reject err
  */
 client.setSensitiveToken = function setSensitiveToken (name) {
@@ -76,7 +76,7 @@ client.setSensitiveToken = function setSensitiveToken (name) {
 /**
  * 删除name及其对应的token两个缓存
  *
- * @param {string} name 账号名
+ * @param {String} name 账号名
  * @returns {Promise} 返回Promise对象，resolve {redisReply},reject err
  */
 client.deleteToken = function deleteToken (name) {
@@ -90,7 +90,7 @@ client.deleteToken = function deleteToken (name) {
 /**
  * 检验token是否有效
  *
- * @param {string} token
+ * @param {String} token
  * @returns {Promise} 返回Promise对象，resolve 'token有效',reject err||'token无效'
  */
 client.tokenValidate = function tokenValidate (token) {
@@ -104,7 +104,7 @@ client.tokenValidate = function tokenValidate (token) {
 /**
  * 通过token取得name
  *
- * @param {string} token
+ * @param {String} token
  * @returns {Promise} resolve name
  */
 client.getNameByToken = function getNameByToken (token) {
@@ -118,7 +118,7 @@ client.getNameByToken = function getNameByToken (token) {
 /**
  * 通过SensitiveToken取得name
  *
- * @param {string} sensitiveToken
+ * @param {String} sensitiveToken
  * @returns {Promise} resolve name
  */
 client.getNameBySensitiveToken = function getNameBySensitiveToken (sensitiveToken) {
@@ -131,7 +131,7 @@ client.getNameBySensitiveToken = function getNameBySensitiveToken (sensitiveToke
 /**
  * 删除敏感token
  *
- * @param {string} sensitiveToken
+ * @param {String} sensitiveToken
  */
 client.deleteSensitiveToken = function deleteSensitiveToken (sensitiveToken) {
   client.del(sensitiveToken)
@@ -140,7 +140,7 @@ client.deleteSensitiveToken = function deleteSensitiveToken (sensitiveToken) {
 /**
  * 通过token获取权限组id
  *
- * @param {string} token
+ * @param {String} token
  */
 client.getGroupIdByToken = function deleteSensitiveToken (token) {
   return client.hgetAsync(token, 'group_id')
@@ -149,8 +149,8 @@ client.getGroupIdByToken = function deleteSensitiveToken (token) {
 /**
  * 检查是否重复
  *
- * @param {string} key 要检查的键名如name,nick_name,email
- * @param {string} value 要检查的值
+ * @param {String} key 要检查的键名如name,nick_name,email
+ * @param {String} value 要检查的值
  * @returns {Promise} 当不存在时即不重复 返回resolve
  */
 client.checkNoRepeat = function checkNoRepeat (key, value) {

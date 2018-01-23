@@ -14,7 +14,7 @@ setTimeout(function () {
   describe('API test', function () {
     after(function () {
       // api 用到mysql,与redis，必须关闭才会自动结束测试脚本
-      mysql.end()
+      mysql.quit()
       redis.quit()
     })
     describe('测试专用API', function () {
@@ -88,6 +88,9 @@ setTimeout(function () {
           done()
         })
       })
+    })
+
+    describe('非账号相关API', function () {
     })
   })
   run()

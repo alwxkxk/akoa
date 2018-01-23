@@ -8,7 +8,7 @@ const STDOUT = require('../config/config.js').STDOUT
 const PORT = require('../config/config.js').PORT
 
 const app = new Koa()
-app.use(handleError((err) => { log.error(err) }))  // 错误处理
+// app.use(handleError((err) => { log.error(err) }))  // 错误处理
 
 app.use(async (ctx, next) => {
   const start = Date.now()

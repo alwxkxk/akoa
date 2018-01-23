@@ -74,6 +74,13 @@ setTimeout(function () {
         })
       })
     })
+    describe('其它测试', function () {
+      it('读取所有的name,nickName,email', async function () {
+        let read
+        read = await mysql.read('user', ['name', 'nick_name', 'email'])
+        console.log(read)
+      })
+    })
   })
   run()
 }, 1000)

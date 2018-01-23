@@ -9,7 +9,7 @@ const common = {
   /**
    * 加后缀再md5
    *
-   * @param {string} string
+   * @param {String} string
    * @returns 加后缀再md5的值
    */
   akoaMd5 (string) {
@@ -29,9 +29,9 @@ const common = {
   /**
    * http JSON回复格式
    *
-   * @param {number} error_code 失败码 0-正常 非0为错误
+   * @param {Number} error_code 失败码 0-正常 非0为错误
    * @param {any} data 携带数据
-   * @returns {object} 自定义标准的http回复JSON格式
+   * @returns {Object} 自定义标准的http回复JSON格式
    *
    */
   httpResponse (errorCode, data) {

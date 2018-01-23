@@ -17,8 +17,8 @@ for (const prop in group) {
 /**
  * 检测某个权限组id是否有权限执行某操作
  *
- * @param {string} action 需要验证权限的动作
- * @param {number} groupId 权限组id
+ * @param {String} action 需要验证权限的动作
+ * @param {Number} groupId 权限组id
  * @returns boolean
  */
 function checkPermisssion (action, groupId) {
