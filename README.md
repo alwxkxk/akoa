@@ -15,11 +15,14 @@ npm install
 ### 配置
 将config.sample.js配置信息补全并改名为config.js才能启动。
 - 如果mysql 与redis有设置密码需要在配置文件中额外填写。
-- 需要配置邮箱才能发送邮件
-
+- 需要配置邮箱才能发送邮件 ，且修改`serverUrl`到你对应的网址。
 ### 运行
 ```bash
 #先配置config/config.js
+#先手动运行，确认没有问题再使用pm2部署
+cd /var/akoa
+npm run dev
+
 pm2 start /var/akoa/src/app.js --name akoa --max-memory-restart 256M
 
 #查看日志
