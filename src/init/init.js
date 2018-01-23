@@ -1,27 +1,32 @@
+
 const mysql = require('../mysql.js')
 const sqlQuery = require('../../config/sql-query.js')
 const mysqlConfig = require('../../config/config.js').mysqlConfig
 const initConfig = require('../../config/config.js').initConfig
 const _ = require('lodash')
 const redis = require('../redis.js')
-
+const chalk = require('chalk')
 const Administrator = require('../class/Administrator.js')
+
 let errorFlag = false
+let hasDb = false
 init()
-// 检查redis版本与配置
-// 初始化数据库
-// initTable()
 
 async function init () {
   try {
+    await pingRedis()
     await initDatabase()
-    await initTable()
-    await insertAdmin()
+    if (!hasDb) {
+      await initTable()
+      await insertAdmin()
+    } else {
+      console.log(chalk.green(`存在数据库${mysqlConfig.database}，无需再初始化数据库。`))
+    }
   } catch (error) {
     console.log('发生错误:', error)
   }
-  if (errorFlag) console.log('初始化失败')
-  else console.log('初始化成功')
+  if (errorFlag) console.log(chalk.red('初始化失败'))
+  else console.log(chalk.green('初始化成功'))
   mysql.quit()
   redis.quit()
 }
@@ -41,12 +46,12 @@ async function initTable () {
       mysql.query(value)
       .then(() => {
         resolve()
-        console.log('创建表：' + key + '成功')
+        console.log(`创建表： ${key} 成功`)
       })
       .catch(err => {
         console.log(err)
         errorFlag = true
-        reject('创建表：' + key + '失败。')
+        reject(`创建表： ${key} 失败`)
       })
     })
     pall.push(p)
@@ -75,14 +80,37 @@ function initDatabase () {
   })
   .then(() => {
     return new Promise((resolve, reject) => {
-      connection.query('CREATE DATABASE ' + mysqlConfig.database + ';', function (error, results, fields) {
-        if (error) {
-          return reject('创建数据库' + mysqlConfig.database + '失败。')
-        }
-        console.log('创建' + mysqlConfig.database + '数据库成功')
-        return resolve()
+      connection.query('SHOW databases', function (error, results, fields) {
+        if (error) return reject(error)
+        // console.log(results)
+        // dbFlag true时代表数据库存在
+        const dbFlag = _.find(results, function (o) {
+          if (o.Database === mysqlConfig.database) {
+            return true
+          } else {
+            return false
+          }
+        })
+        return resolve(dbFlag)
       })
     })
+  })
+  .then((dbFlag) => {
+    if (dbFlag) {
+      hasDb = true
+      console.log(chalk.green(`数据库${mysqlConfig.database}已存在`))
+      return Promise.resolve()
+    } else {
+      return new Promise((resolve, reject) => {
+        connection.query('CREATE DATABASE ' + mysqlConfig.database + ';', function (error, results, fields) {
+          if (error) {
+            return reject(`创建数据库 ${mysqlConfig.database} 失败。`)
+          }
+          console.log(chalk.green(`创建数据库 ${mysqlConfig.database} 成功。`))
+          return resolve()
+        })
+      })
+    }
   })
   .then(() => {
     connection.end()
@@ -92,5 +120,18 @@ function initDatabase () {
     console.log(err)
     connection.end()
     return Promise.reject('创建数据库失败')
+  })
+}
+
+/**
+ * ping redis
+ *
+ * @returns {Promise}
+ */
+function pingRedis () {
+  return redis.pingAsync()
+  .then(v => {
+    if (v !== 'PONG') return Promise.reject('无法PING通Redis')
+    else console.log(chalk.green('连接redis成功'))
   })
 }
