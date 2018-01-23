@@ -6,6 +6,7 @@ const log = require('./log.js')
 const api = require('./api.js')
 const STDOUT = require('../config/config.js').STDOUT
 const PORT = require('../config/config.js').PORT
+const redis = require('./redis.js')
 
 const app = new Koa()
 // app.use(handleError((err) => { log.error(err) }))  // 错误处理
@@ -22,6 +23,7 @@ app.use(logger())// koa-logger 方便调试
 
 app.use(router.middleware())// 路由文件
 app.use(api.middleware())// API路由文件
+redis.updateCheckList()// 初始化redis 检测列表
 
 app.listen(PORT, () => {
   console.log('listening ' + 'http://localhost:' + PORT)
