@@ -9,6 +9,7 @@ const md5 = require('md5')
 const log = require('./log.js')
 let client = redis.createClient(redisConfig)
 const checkList = require('../config/config.js').checkList
+const _ = require('lodash')
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
 // 到此，可以使用加Async的后缀实现promise化 client.getAsync('foo').then(function(res) {
