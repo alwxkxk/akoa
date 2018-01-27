@@ -71,8 +71,8 @@ const common = {
     await si.mem()
     .then(data => {
       result.mem.totol = Math.round(data.total / 1024 / 1024)
-      result.mem.used = Math.round(data.used / 1024 / 1024)
-      result.mem.percentage = Math.round(data.used / data.total * 100)
+      result.mem.used = Math.round(data.active / 1024 / 1024)
+      result.mem.percentage = Math.round(data.active / data.total * 100)
     })
     .catch(error => console.error(error))
 
