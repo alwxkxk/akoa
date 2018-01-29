@@ -32,7 +32,12 @@ class User {
 
     // 加盐后再md5一次
     return mysql.insert('user', ['name', 'password', 'nick_name', 'create_time', 'last_time', 'group_id'], [name, common.akoaMd5(password), name, time, time, getGroupId(gruopName)])
-    .then(v => { return Promise.resolve('账号注册成功') })
+    .then(v => {
+      // 添加到检测列表
+      redis.checkListAdd('name', name)
+      redis.checkListAdd('nick_name', name)
+      return Promise.resolve('账号注册成功')
+    })
     .catch(e => {
       if (e.code === 'ER_DUP_ENTRY') return Promise.reject('账号名重复')
       else return Promise.reject(e.sqlMessage)// 其它错误直接传sqlMessage
@@ -175,10 +180,19 @@ class User {
    * @memberof User
    */
   static setEmail (sensitiveToken, email) {
+    let oldEmail
     return redis.getNameBySensitiveToken(sensitiveToken)
-    .then(name => { return mysql.updated('user', ['email', email], ['name', name]) })
+    .then(name => {
+      mysql.read('user', ['email'], ['name', name])
+      .then(reads => {
+        oldEmail = reads[0].email
+      })
+      return mysql.updated('user', ['email', email], ['name', name])
+    })
     .then(v => {
       redis.deleteSensitiveToken(sensitiveToken)
+      redis.checkListAdd('email', email)
+      redis.checkListRemove('email', oldEmail)
       return Promise.resolve('修改邮箱成功')
     })
   }
@@ -237,6 +251,13 @@ class User {
         return mysql.updated('user', ['nick_name', nickName], ['name', name])
       })
       .then(v => {
+        // 给重复检查列表添加新值
+        redis.checkListAdd('nick_name', nickName)
+        redis.getInfoByToken(token, 'nick_name')
+        .then(nickName => {
+          // 删除旧值
+          redis.checkListRemove('nick_name', nickName)
+        })
         return Promise.resolve('成功修改昵称')
       })
   }

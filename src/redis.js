@@ -117,6 +117,21 @@ client.getNameByToken = function getNameByToken (token) {
 }
 
 /**
+ * 从reids获取用户信息
+ *
+ * @param {String} token
+ * @param {String} key 所需信息的键名
+ * @returns
+ */
+client.getInfoByToken = function getInfoByToken (token, key) {
+  return client.hgetAsync(token, key)
+  .then(value => {
+    if (value) return Promise.resolve(value)
+    else return Promise.reject('token无效')
+  })
+}
+
+/**
  * 通过SensitiveToken取得name
  *
  * @param {String} sensitiveToken
@@ -190,6 +205,36 @@ client.updateCheckList = function updateCheckList () {
       console.error(err)
       log.error(err)
     })
+}
+
+/**
+ * 给检查列表添加新值
+ *
+ * @param {String} key 健名
+ * @param {String} value 值
+ */
+client.checkListAdd = function checkListAdd (key, value) {
+  if (checkList.indexOf(key) === -1) {
+    console.error(`${key}不在检查列表`)
+    log.error(`${key}不在检查列表`)
+  } else {
+    client.sadd(key, value)
+  }
+}
+
+/**
+ * 给检查列表删除值
+ *
+ * @param {String} key 健名
+ * @param {String} value 值
+ */
+client.checkListRemove = function checkListRemove (key, value) {
+  if (checkList.indexOf(key) === -1) {
+    console.error(`${key}不在检查列表`)
+    log.error(`${key}不在检查列表`)
+  } else {
+    client.srem(key, value)
+  }
 }
 // 结束连接
 // client.quit()
