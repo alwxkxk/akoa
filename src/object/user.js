@@ -9,6 +9,7 @@ const readline = require('readline')
 const fs = require('fs')
 const emailer = require('../emailer.js')
 const checkList = require('../../config/config.js').checkList
+const fileSystem = require('./fileSystem.js').userMethod
 
 const user = {
   /**
@@ -240,7 +241,24 @@ const user = {
         })
         return Promise.resolve('成功修改昵称')
       })
+  },
+
+  // -------------------------文件系统接口 start--------------------------
+  /**
+   * 用户上传文件
+   *
+   * @param {String} token token
+   * @param {Stream} file 文件流
+   * @returns {Promise}
+   */
+  uploadFile (token, file) {
+    return redis.getNameByToken(token)
+      .then((name) => {
+        // console.log(name, file)
+        return fileSystem.upload(name, file)
+      })
   }
+  // -------------------------文件系统接口 end--------------------------
 }
 
 /**

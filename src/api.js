@@ -266,15 +266,15 @@ router.post('/avatar', setAll, async function (ctx, next) {
 
 // post /api/file 上传文件
 // request header or cookie 'token',body: form-data:file
-// response 成功的返回数据 包含文件名称 fileName:...
+// response 成功的返回数据 包含文件名称、大小、uuid名
 router.post('/file', setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
 
   const { files } = await asyncBusboy(ctx.req)
   const file = files[0]
-  const suffix = path.extname(file.filename)
-  const fileName = common.uuid() + suffix
-  const saveTo = path.join(config.ImagePath, fileName)
+  await user.uploadFile(ctx.$token, file)
+  .then((v) => { ctx.body = common.httpResponse(0, v) })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
 })
 // post /api/email 用户申请 修改邮箱
 // request header or cookie 'token',body: {password:'',email:''}
