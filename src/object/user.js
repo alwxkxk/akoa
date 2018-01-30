@@ -10,17 +10,15 @@ const fs = require('fs')
 const emailer = require('../emailer.js')
 const checkList = require('../../config/config.js').checkList
 
-class User {
+const user = {
   /**
    * 注册账号
    *
-   * @static
    * @param {String} name 账号名
    * @param {String} password 已经被前端md5过一次的密码
    * @returns {Promise} 返回Promise对象，resolve '账号注册成功' ,reject '账号名重复'||e.sqlMessage
-   * @memberof User
    */
-  static register (name, password, gruopName = 'user') {
+  register (name, password, gruopName = 'user') {
     // TODO:优化：前端应提供 先检测有无重名的
     // 前端应将password先加盐md5一次再传输到后台
     const time = common.now()
@@ -42,18 +40,16 @@ class User {
       if (e.code === 'ER_DUP_ENTRY') return Promise.reject('账号名重复')
       else return Promise.reject(e.sqlMessage)// 其它错误直接传sqlMessage
     })
-  }
+  },
 
   /**
    * 账号登陆
    *
-   * @static
    * @param {String} name 账号名
    * @param {String} password 已经被前端md5过一次的密码
    * @returns {Promise} 返回Promise对象，resolve {token} ,reject '账号不存在或密码错误'||e
-   * @memberof User
    */
-  static login (name, password) {
+  login (name, password) {
     let user
     let need = ['name', 'nick_name', 'email', 'group_id', 'avatar']
     return mysql.read('user', need, ['name', name, 'password', common.akoaMd5(password)])
@@ -73,17 +69,15 @@ class User {
       console.log(e)
       return Promise.reject(e)
     })
-  }
+  },
 
   /**
    * 退出登陆，删除token
    *
-   * @static
    * @param {String} token 用户凭证
    * @returns {Promise}
-   * @memberof User
    */
-  static logout (token) {
+  logout (token) {
     // 在redit里删除用户凭证
     return redis.getNameByToken(token)
     .then((name) => {
@@ -91,17 +85,15 @@ class User {
       userLog(name, {time: common.now(), action: '退出登陆'})
       return redis.deleteToken(name)
     })
-  }
+  },
 
   /**
    * 取得当前用户的用户日志
    *
-   * @static
    * @param {String} token 用户凭证
    * @returns {Promise} logList 数组
-   * @memberof User
    */
-  static getUserLog (token) {
+  getUserLog (token) {
     return redis.getNameByToken(token)
     .then((name) => {
       if (!name) return Promise.reject('token已过期')
@@ -121,18 +113,16 @@ class User {
         })
       })
     })
-  }
+  },
 
   /**
    * 验证当前用户密码，返回sensitiveToken
    *
-   * @static
    * @param {String} token 用户凭证
    * @param {String} password 密码
    * @returns {Promise} reject '密码错误'||其它错误 , reject `${sensitiveToken}`
-   * @memberof User
    */
-  static getSensitiveToken (token, password) {
+  getSensitiveToken (token, password) {
     return redis.getNameByToken(token)
     .then((name) => {
       return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(password)])
@@ -141,19 +131,17 @@ class User {
       if (reads.length === 0) return Promise.reject('密码错误')
       else return redis.setSensitiveToken(reads[0].name)
     })
-  }
+  },
 
   /**
    * 修改密码
    *
-   * @static
    * @param {String} token 用户凭证
    * @param {String} oldPassword 旧密码
    * @param {String} newPassword 新密码
    * @returns {Promise}
-   * @memberof User
    */
-  static changePassword (token, oldPassword, newPassword) {
+  changePassword (token, oldPassword, newPassword) {
     return redis.getNameByToken(token)
     .then((name) => {
       return mysql.read('user', ['name'], ['name', name, 'password', common.akoaMd5(oldPassword)])
@@ -168,18 +156,16 @@ class User {
     .then(v => {
       return Promise.resolve('成功修改密码')
     })
-  }
+  },
 
   /**
    * 设备用户邮箱
    *
-   * @static
    * @param {String} sensitiveToken 敏感操作token
    * @param {String} email 邮箱地址
    * @returns {Promise}
-   * @memberof User
    */
-  static setEmail (sensitiveToken, email) {
+  setEmail (sensitiveToken, email) {
     let oldEmail
     return redis.getNameBySensitiveToken(sensitiveToken)
     .then(name => {
@@ -195,17 +181,15 @@ class User {
       redis.checkListRemove('email', oldEmail)
       return Promise.resolve('修改邮箱成功')
     })
-  }
+  },
   /**
    * 修改头像
    *
-   * @static
    * @param {String} token 用户凭证
    * @param {String} imageName 图片文件名
    * @returns {Promise}
-   * @memberof User
    */
-  static changeAvatar (token, imageName) {
+  changeAvatar (token, imageName) {
     return redis.getNameByToken(token)
     .then((name) => {
       return mysql.updated('user', ['avatar', imageName], ['name', name])
@@ -213,16 +197,14 @@ class User {
     .then(v => {
       return Promise.resolve('成功修改头像')
     })
-  }
+  },
 
 /**
  *用户忘记密码，通过邮箱找到用户，修改成随机密码并发送给用户。
  *
- * @static
  * @param {String} email 邮箱地址
- * @memberof User
  */
-  static forgetPassword (email) {
+  forgetPassword (email) {
     // NOTE: 客户端密码在处理一次，在保存到数据库前再处理一次
     const newPasswordForUser = common.akoaMd5(common.now()) // 这里模拟客户端的密码第一次处理，根据实际情况修改
     const newPasswordForDB = common.akoaMd5(newPasswordForUser)
@@ -234,18 +216,16 @@ class User {
         return mysql.updated('user', ['password', newPasswordForDB], ['name', reads[0].name])
       }
     })
-  }
+  },
 
 /**
  * 修改昵称
  *
- * @static
  * @param {String} token  用户凭证
  * @param {String} nickName 昵称
  * @returns {Promise}
- * @memberof User
  */
-  static changeNickName (token, nickName) {
+  changeNickName (token, nickName) {
     return redis.getNameByToken(token)
       .then((name) => {
         return mysql.updated('user', ['nick_name', nickName], ['name', name])
@@ -284,4 +264,4 @@ function userLog (name, data, level = 'info') {
   log[level](data)
 }
 
-module.exports = User
+module.exports = user

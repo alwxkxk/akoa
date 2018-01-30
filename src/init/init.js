@@ -6,7 +6,7 @@ const initConfig = require('../../config/config.js').initConfig
 const _ = require('lodash')
 const redis = require('../redis.js')
 const chalk = require('chalk')
-const Administrator = require('../class/Administrator.js')
+const administrator = require('../object/administrator.js')
 
 let errorFlag = false
 let hasDb = false
@@ -32,7 +32,7 @@ async function init () {
 }
 
 async function insertAdmin () {
-  return Administrator.register(initConfig.adminName, initConfig.adminPassword)
+  return administrator.register(initConfig.adminName, initConfig.adminPassword)
 }
 
 /**

@@ -15,8 +15,8 @@ const log = require('./log.js')
 const STDOUT = require('../config/config.js').STDOUT
 const redis = require('./redis.js')
 
-const User = require('./class/User.js')
-const Administrator = require('./class/Administrator.js')
+const user = require('./object/user.js')
+const administrator = require('./object/administrator.js')
 let api = Router({ prefix: '/api' })  // 所有API路由都有/api前缀
 
 /**
@@ -101,7 +101,7 @@ router.post('/user', body(), setAll, async function (ctx, next) {
   checkParams(ctx, ['name', 'password'])
   if (!ctx.$requestBody) return next()
 
-  await User.register(ctx.$requestBody.name, ctx.$requestBody.password)
+  await user.register(ctx.$requestBody.name, ctx.$requestBody.password)
   .then(() => { ctx.body = common.httpResponse(0) })
   .catch((err) => { ctx.body = common.httpResponse(1, err) })
 
@@ -117,7 +117,7 @@ router.post('/token', body(), setAll, async function (ctx, next) {
   if (!ctx.$requestBody) return next()
 
    // 账号登陆
-  await User.login(ctx.$requestBody.name, ctx.$requestBody.password)
+  await user.login(ctx.$requestBody.name, ctx.$requestBody.password)
     .then((user) => {
       ctx.cookies.set('token', user.token)
       ctx.body = common.httpResponse(0, user)
@@ -135,7 +135,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
 
   // 从缓存中删除此token
-  await User.logout(ctx.$token)
+  await user.logout(ctx.$token)
   .then((v) => {
     ctx.body = common.httpResponse(0)
   })
@@ -152,7 +152,7 @@ router.del('/token', body(), setAll, async function (ctx, next) {
 router.get('/log', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
 
-  await User.getUserLog(ctx.$token)
+  await user.getUserLog(ctx.$token)
   .then(logList => {
     ctx.body = common.httpResponse(0, logList)
   })
@@ -184,7 +184,7 @@ router.get('/log', body(), setAll, async function (ctx, next) {
 //     return next()
 //   }
 
-//   await User.comfirmPassword(token, data.password)
+//   await user.comfirmPassword(token, data.password)
 //   .then(sensitiveToken => { ctx.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
 //   .catch(err => { ctx.body = common.httpResponse(1, err) })
 //   return next()
@@ -202,7 +202,7 @@ router.put('/password', body(), setAll, async function (ctx, next) {
   checkParams(ctx, ['password', 'newPassword'])
   if (!ctx.$requestBody) return next()
 
-  await User.changePassword(ctx.$token, ctx.$requestBody.password, ctx.$requestBody.newPassword)
+  await user.changePassword(ctx.$token, ctx.$requestBody.password, ctx.$requestBody.newPassword)
   .then((v) => { ctx.body = common.httpResponse(0) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -223,7 +223,7 @@ router.del('/password/email/:email', setAll, async function (ctx, next) {
     return next()
   }
 
-  await User.forgetPassword(data.email)
+  await user.forgetPassword(data.email)
   .then(v => { ctx.body = common.httpResponse(0) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -249,7 +249,7 @@ router.post('/avatar', setAll, async function (ctx, next) {
     // 取得文件后缀名 格式检查 用uuid创建新文件
     image.pipe(fs.createWriteStream(saveTo))
     // 返回图片名
-    await User.changeAvatar(ctx.$token, imageName)
+    await user.changeAvatar(ctx.$token, imageName)
     .then((v) => {
       ctx.body = common.httpResponse(0, {imageName: imageName})
       return next()
@@ -264,6 +264,18 @@ router.post('/avatar', setAll, async function (ctx, next) {
   }
 })
 
+// post /api/file 上传文件
+// request header or cookie 'token',body: form-data:file
+// response 成功的返回数据 包含文件名称 fileName:...
+router.post('/file', setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+
+  const { files } = await asyncBusboy(ctx.req)
+  const file = files[0]
+  const suffix = path.extname(file.filename)
+  const fileName = common.uuid() + suffix
+  const saveTo = path.join(config.ImagePath, fileName)
+})
 // post /api/email 用户申请 修改邮箱
 // request header or cookie 'token',body: {password:'',email:''}
 router.post('/email', body(), setAll, async function (ctx, next) {
@@ -273,7 +285,7 @@ router.post('/email', body(), setAll, async function (ctx, next) {
   checkParams(ctx, ['password', 'email'])
   if (!ctx.$requestBody) return next()
 
-  await User.getSensitiveToken(ctx.$token, ctx.$requestBody.password)
+  await user.getSensitiveToken(ctx.$token, ctx.$requestBody.password)
   .then(sensitiveToken => {
     emailer.userSetEmail(ctx.$requestBody.email, sensitiveToken)
     ctx.body = common.httpResponse(0)
@@ -298,7 +310,7 @@ router.get('/sensitiveToken/:sensitiveToken/email/:email', setAll, async functio
     ctx.body = common.httpResponse(1001, details)
     return next()
   }
-  await User.setEmail(data.sensitiveToken, data.email)
+  await user.setEmail(data.sensitiveToken, data.email)
   .then(v => {
     ctx.body = '修改邮件成功'
   })
@@ -316,7 +328,7 @@ router.put('/nickName', body(), setAll, async function (ctx, next) {
   checkParams(ctx, ['nickName'])
   if (!ctx.$requestBody) return next()
 
-  await User.changeNickName(ctx.$token, ctx.$requestBody.nickName)
+  await user.changeNickName(ctx.$token, ctx.$requestBody.nickName)
   .then(v => { ctx.body = common.httpResponse(0) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -328,7 +340,7 @@ router.put('/nickName', body(), setAll, async function (ctx, next) {
 router.get('/userList', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
 
-  await Administrator.getUserList(ctx.$token)
+  await administrator.getUserList(ctx.$token)
   .then(userList => { ctx.body = common.httpResponse(0, userList) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -339,7 +351,7 @@ router.get('/userList', body(), setAll, async function (ctx, next) {
 router.del('/user/:name', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
   const name = ctx.params.name
-  await Administrator.deleteUser(ctx.$token, name)
+  await administrator.deleteUser(ctx.$token, name)
   .then(() => { ctx.body = common.httpResponse(0) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()

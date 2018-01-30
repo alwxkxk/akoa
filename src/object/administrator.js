@@ -1,21 +1,18 @@
-const User = require('./User.js')
+const user = require('./user.js')
 const redis = require('../redis.js')
 const mysql = require('../mysql.js')
 const checkPermisssion = require('../../config/permission.js').checkPermisssion
 const getGroupId = require('../../config/permission.js').getGroupId
-class Administrator extends User {
-  static register (name, password) {
-    return User.register(name, password, 'administrator')
-  }
+const administrator = {
+  register (name, password) {
+    return user.register(name, password, 'administrator')
+  },
   /**
    * 删除账号
-   *
-   * @static
    * @param {String} name 要删除的用户名
    * @returns {Promise}
-   * @memberof Administrator
    */
-  static deleteUser (token, name) {
+  deleteUser (token, name) {
     return authentication('deleteUser', token)// 先检查管理员是否有操作权限
     .then(() => { return mysql.read('user', ['name', 'group_id'], ['name', name]) })
     .then(reads => {
@@ -26,17 +23,15 @@ class Administrator extends User {
     .catch(e => {
       return Promise.reject(e)
     })
-  }
+  },
 
   /**
    * 获取所有用户列表
    *
-   * @static
    * @param {String} name 要删除的用户名
    * @returns {Promise}
-   * @memberof Administrator
    */
-  static getUserList (token) {
+  getUserList (token) {
     return authentication('getUserList', token)// 先检查管理员是否有操作权限
     .then(() => {
       return mysql.read('user', ['name', 'nick_name', 'group_id', 'create_time', 'last_time'])
@@ -62,4 +57,4 @@ function authentication (action, token) {
     })
 }
 
-module.exports = Administrator
+module.exports = administrator
