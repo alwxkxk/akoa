@@ -257,6 +257,50 @@ const user = {
         // console.log(name, file)
         return fileSystem.upload(name, file)
       })
+  },
+
+  /**
+   * 获取用户所拥有的文件
+   *
+   * @param {String} token token
+   * @returns {Promise}
+   */
+  fileList (token) {
+    return redis.getNameByToken(token)
+    .then(name => {
+      return fileSystem.fileList(name)
+    })
+  },
+  /**
+   * 用户删除文件
+   *
+   * @param {String} token token
+   * @param {String} uuid 文件的uuid名
+   * @returns {Promise}
+   */
+  deleteFile (token, uuid) {
+    return redis.getNameByToken(token)
+    .then(name => {
+      return fileSystem.deleteFile(name, uuid)
+    })
+  },
+  /**
+   * 用户下载文件
+   *
+   * @param {String} token token
+   * @param {String} uuid 文件的uuid名
+   * @returns {Promise}
+   */
+  downloadFile (token, uuid) {
+    return redis.getNameByToken(token)
+    .then(name => {
+      // 先验证文件是否属于他
+      return mysql.read('file', ['uuid'], ['owner', name, 'uuid', uuid])
+    })
+    .then(reads => {
+      if (reads[0]) return fileSystem.download(uuid)
+      else return new Promise.reject('文件不存在')
+    })
   }
   // -------------------------文件系统接口 end--------------------------
 }

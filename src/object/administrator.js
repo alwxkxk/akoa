@@ -4,6 +4,13 @@ const mysql = require('../mysql.js')
 const checkPermisssion = require('../../config/permission.js').checkPermisssion
 const getGroupId = require('../../config/permission.js').getGroupId
 const administrator = {
+  /**
+   * 管理员注册
+   *
+   * @param {String} name
+   * @param {String} password
+   * @returns
+   */
   register (name, password) {
     return user.register(name, password, 'administrator')
   },
