@@ -7,14 +7,14 @@
       
       <link rel="stylesheet" href="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\katex\katex.min.css">
       
+      <link rel="stylesheet" href="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\js-sequence-diagrams\sequence-diagram-min.css">
       
       
       
       
       
       
-      
-      
+      <script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\webfont\webfontloader.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\raphael\raphael.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\underscore\underscore.js"></script><script type="text/javascript" src="file:///C:\Users\alw\.vscode\extensions\shd101wyy.markdown-preview-enhanced-0.3.2\node_modules\@shd101wyy\mume\dependencies\js-sequence-diagrams\sequence-diagram-min.js"></script>
 
       <style> 
       /**
@@ -257,6 +257,14 @@ Country: CN
 <h2 class="mume-header" id="%E6%93%8D%E4%BD%9C%E5%8A%9F%E8%83%BD">操作功能</h2>
 
 <p>用户上传文件成功后会生成uuid将其命名，保存于磁盘，将文件信息保存到数据库中。</p>
+<h3 class="mume-header" id="%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6">上传文件</h3>
+
+<p>上传文件具体的实现方法与上传进度条，与XMLRequest、FromData有关，可直接参考element框架里的<code>pakeages/upload/ajax.js</code>。</p>
+<div class="sequence">浏览器->服务器:上传文件
+Note over 服务器:保存文件
+Note over 服务器:将文件信息插入数据库
+服务器-->浏览器:文件信息
+</div>
 <h2 class="mume-header" id="%E7%AE%A1%E7%90%86%E5%8A%9F%E8%83%BD">管理功能</h2>
 
 <p>将所有信息给管理员显示出来。</p>
@@ -266,7 +274,11 @@ Country: CN
 <li><a href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F">文件系统</a>
 <ul>
 <li><a href="#%E9%9C%80%E6%B1%82">需求</a></li>
-<li><a href="#%E6%93%8D%E4%BD%9C%E5%8A%9F%E8%83%BD">操作功能</a></li>
+<li><a href="#%E6%93%8D%E4%BD%9C%E5%8A%9F%E8%83%BD">操作功能</a>
+<ul>
+<li><a href="#%E4%B8%8A%E4%BC%A0%E6%96%87%E4%BB%B6">上传文件</a></li>
+</ul>
+</li>
 <li><a href="#%E7%AE%A1%E7%90%86%E5%8A%9F%E8%83%BD">管理功能</a></li>
 </ul>
 </li>
@@ -278,7 +290,21 @@ Country: CN
     
     
     
-    
+    <script>
+      var sequenceDiagrams = document.getElementsByClassName('sequence')
+      for (var i = 0; i < sequenceDiagrams.length; i++) {
+        var sequence = sequenceDiagrams[i]
+        try {
+          var diagram = Diagram.parse(sequence.textContent)
+          var theme = sequence.getAttribute('theme') || 'simple'
+          sequence.id = 'sequence_' + i
+          sequence.innerHTML = ''
+          diagram.drawSVG(sequence.id, {theme: theme})
+        } catch (error) {
+          sequence.innerHTML = '<pre class="language-text">' + error.toString() + '</pre>'
+        }
+      }
+      </script>
     <script>
 (function bindTaskListEvent() {
   var taskListItemCheckboxes = document.body.getElementsByClassName('task-list-item-checkbox')

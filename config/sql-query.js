@@ -16,7 +16,7 @@ module.exports = {
     file: 'CREATE TABLE file \
     ( \
       uuid varchar(255) NOT NULL PRIMARY KEY COMMENT "文件的uuid,系统会以此作为文件名，主键", \
-      fileName varchar(255) NOT NULL COMMENT "用户设置的文件名", \
+      file_name varchar(255) NOT NULL COMMENT "用户设置的文件名", \
       create_time DATETIME NOT NULL COMMENT "创建时间", \
       owner varchar(255) COMMENT "文件所属用户 索引:owner_index", \
       size INT UNSIGNED DEFAULT 0 COMMENT "文件大小 KB", \
@@ -32,7 +32,7 @@ module.exports = {
       state varchar(255) COMMENT "状态",\
       time DATETIME COMMENT "时间",\
       sender varchar(255) COMMENT "发送者",\
-      reciever varchar(255) COMMENT "接收者"\
+      receiver varchar(255) COMMENT "接收者"\
     );'
   }
 }
