@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon ./src/app.js",
-    "test": "mocha --require intelli-espower-loader --delay test/temporary.test.js",
+    "test": "mocha --require intelli-espower-loader --delay test/api.test.js",
     "init": "node src/init/init.js"
   },
   "standard": {
@@ -39,7 +39,6 @@
     "koa-better-body": "^3.0.4",
     "koa-better-router": "^2.1.1",
     "koa-handle-error": "0.0.5",
-    "koa-logger": "^3.1.0",
     "lodash": "^4.17.4",
     "mysql": "^2.15.0",
     "nodemailer": "^4.4.0",
