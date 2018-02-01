@@ -1,3 +1,4 @@
+
 const mysql = require('../mysql.js')
 const common = require('../common.js')
 const path = require('path')
@@ -9,7 +10,7 @@ const stat = util.promisify(fs.stat)
 const unlink = util.promisify(fs.unlink)
 const readFile = util.promisify(fs.readFile)
 
-exports.userMethod = {
+const userMethod = {
   /**
    * 上传文件
    *
@@ -45,7 +46,7 @@ exports.userMethod = {
       return mysql.insert('file', ['uuid', 'file_name', 'create_time', 'owner', 'size'], [uuid, fileName, time, owner, fileSize])
     })
     .then(() => {
-      return Promise.resolve({uuid: uuid, size: fileSize, file_name: fileName, create_time: time})
+      return Promise.resolve({uuid: uuid, size: fileSize, file_name: fileName, create_time: time, owner: owner})
     })
   },
   /**
@@ -55,7 +56,7 @@ exports.userMethod = {
    * @returns {Promise}
    */
   fileList (owner) {
-    return mysql.read('file', ['uuid', 'file_name', 'create_time', 'size'], ['owner', owner])
+    return mysql.read('file', ['uuid', 'file_name', 'create_time', 'size', 'owner'], ['owner', owner])
   },
   /**
    * 删除本地文件及数据库中的信息
@@ -65,10 +66,9 @@ exports.userMethod = {
    * @returns {Promise}
    */
   deleteFile (owner, uuid) {
-    return unlink(path.join(config.filePath, uuid))// 删除本地文件
-    .then(() => {
-      return mysql.sqlDelete('file', ['owner', owner, 'uuid', uuid])
-    })
+    unlink(path.join(config.filePath, uuid))// 删除本地文件
+    .catch(err => { console.log(err) })
+    return mysql.sqlDelete('file', ['owner', owner, 'uuid', uuid])
   },
   /**
    * 下载文件
@@ -76,11 +76,47 @@ exports.userMethod = {
    * @param {String} uuid 文件uuid名
    * @returns {Promise}
    */
-  download (uuid) {
-    return readFile(path.join(config.filePath, uuid))
+  download (owner, uuid) {
+    return mysql.read('file', ['uuid'], ['owner', owner, 'uuid', uuid])
+    .then(reads => {
+      if (reads[0]) return readFile(path.join(config.filePath, uuid))
+      else return Promise.reject('文件不存在')
+    })
   }
 }
 
-exports.administratorMethod = {
+const administratorMethod = {
+  /**
+   * 管理员删除文件
+   *
+   * @param {String} uuid 文件uuid名
+   * @returns {Promise}
+   */
+  deleteFile (uuid) {
+    return unlink(path.join(config.filePath, uuid))// 删除本地文件
+    .then(() => {
+      return mysql.sqlDelete('file', ['uuid', uuid])
+    })
+  },
+  /**
+   *
+   * 管理员获取所有的文件列表
+   * @returns {Promise}
+   */
+  fileList () {
+    return mysql.read('file', ['uuid', 'file_name', 'create_time', 'size', 'owner'])
+  },
+  /**
+   * 管理员下载文件
+   *
+   * @param {String} uuid 文件uuid名
+   * @returns {Promise}
+   */
+  download (uuid) {
+    return readFile(path.join(config.filePath, uuid))
+  }
 
 }
+
+exports.userMethod = userMethod
+exports.administratorMethod = administratorMethod

@@ -163,36 +163,6 @@ router.get('/log', body(), setAll, async function (ctx, next) {
   return next()
 })
 
-// POST /api/sensitiveToken 通过重输密码 取得敏感操作token
-// request header or cookie 'token',body:{password:''}
-// response 成功的返回数据 包含敏感token sensitiveToken:...
-// router.post('/sensitiveToken', body(), setAll, async function (ctx, next) {
-//   const token = ctx.header.token || ctx.cookies.get('token')
-//   if (!token) {
-//     ctx.body = common.httpResponse(2003)// token无效
-//     return next()
-//   }
-//   const data = ctx.request.fields
-//   const schema = Joi.object().keys({
-//     password: Joi.string().required()
-//   })
-//   const result = Joi.validate(data, schema, { abortEarly: false })
-//   if (result.error) {
-//     // 取得参数有误的所有messages
-//     const details = { details: _.map(result.error.details, 'message') }
-//     ctx.body = common.httpResponse(1001, details)
-//     return next()
-//   }
-
-//   await user.comfirmPassword(token, data.password)
-//   .then(sensitiveToken => { ctx.body = common.httpResponse(0, {sensitiveToken: sensitiveToken}) })
-//   .catch(err => { ctx.body = common.httpResponse(1, err) })
-//   return next()
-// },
-// function * (next) {
-//   yield next
-// })
-
 // PUT /api/password 修改用户密码
 // request header or cookie 'token',body:{password:'',newPassword:''}
 router.put('/password', body(), setAll, async function (ctx, next) {
@@ -277,12 +247,17 @@ router.post('/file', setAll, async function (ctx, next) {
   .catch(err => { ctx.body = common.httpResponse(1, err) })
 })
 
-// get /api/file 获取文件列表
+// get /api/fileList 获取文件列表
 // request header or cookie 'token',
 // response 成功的返回数据 包含文件名称、大小、uuid名、创建时间
 router.get('/fileList', setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
-  await user.fileList(ctx.$token)
+  // 管理员与普通用户共用接口
+  await administrator.isAdministrator(ctx.$token)
+  .then(is => {
+    if (is) return administrator.getFileList(ctx.$token)
+    else return user.fileList(ctx.$token)
+  })
   .then((v) => { ctx.body = common.httpResponse(0, v) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -292,7 +267,12 @@ router.get('/fileList', setAll, async function (ctx, next) {
 // request header or cookie 'token'
 router.del('/file/:uuid', setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
-  await user.deleteFile(ctx.$token, ctx.params.uuid)
+
+  await administrator.isAdministrator(ctx.$token)
+  .then(is => {
+    if (is) return administrator.deleteFile(ctx.$token, ctx.params.uuid)
+    else return user.deleteFile(ctx.$token, ctx.params.uuid)
+  })
   .then(() => { ctx.body = common.httpResponse(0) })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
@@ -302,7 +282,11 @@ router.del('/file/:uuid', setAll, async function (ctx, next) {
 // response 成功的返回文件
 router.get('/file/:uuid', setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
-  await user.downloadFile(ctx.$token, ctx.params.uuid)
+  await administrator.isAdministrator(ctx.$token)
+  .then(is => {
+    if (is) return administrator.downloadFile(ctx.$token, ctx.params.uuid)
+    else return user.downloadFile(ctx.$token, ctx.params.uuid)
+  })
   .then(file => {
     ctx.body = file
     ctx.type = 'application/octet-stream'

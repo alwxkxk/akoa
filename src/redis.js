@@ -127,7 +127,7 @@ client.getInfoByToken = function getInfoByToken (token, key) {
   return client.hgetAsync(token, key)
   .then(value => {
     if (value) return Promise.resolve(value)
-    else return Promise.reject('token无效')
+    else return Promise.reject('token无效或查询关键字不存在')
   })
 }
 

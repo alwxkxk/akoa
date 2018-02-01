@@ -295,11 +295,7 @@ const user = {
     return redis.getNameByToken(token)
     .then(name => {
       // 先验证文件是否属于他
-      return mysql.read('file', ['uuid'], ['owner', name, 'uuid', uuid])
-    })
-    .then(reads => {
-      if (reads[0]) return fileSystem.download(uuid)
-      else return new Promise.reject('文件不存在')
+      return fileSystem.download(name, uuid)
     })
   }
   // -------------------------文件系统接口 end--------------------------

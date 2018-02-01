@@ -1,6 +1,9 @@
 const PERMISESSION = {
   'deleteUser': ['administrator'], // 删除账号 - [管理员]
-  'getUserList': ['administrator']
+  'getUserList': ['administrator'], // 取得所有用户列表
+  'getFileList': ['administrator'], // 允许管理员获取所有文件列表
+  'deleteFile': ['administrator'], // 删除任意文件
+  'downloadFile': ['administrator']// 下载任意文件
 }
 
 let group = {// 权限组id及对应身份

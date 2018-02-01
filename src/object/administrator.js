@@ -3,6 +3,7 @@ const redis = require('../redis.js')
 const mysql = require('../mysql.js')
 const checkPermisssion = require('../../config/permission.js').checkPermisssion
 const getGroupId = require('../../config/permission.js').getGroupId
+const fileSystem = require('./fileSystem.js').administratorMethod
 const administrator = {
   /**
    * 管理员注册
@@ -13,6 +14,19 @@ const administrator = {
    */
   register (name, password) {
     return user.register(name, password, 'administrator')
+  },
+  /**
+   * 判断此token是否为管理员
+   *
+   * @param {String} token
+   * @returns {Promise} 返回布尔值
+   */
+  isAdministrator (token) {
+    return redis.getGroupIdByToken(token)
+    .then(groupId => {
+      if (Number(groupId) === getGroupId('administrator')) return Promise.resolve(true)
+      else return Promise.resolve(false)
+    })
   },
   /**
    * 删除账号
@@ -43,10 +57,46 @@ const administrator = {
     .then(() => {
       return mysql.read('user', ['name', 'nick_name', 'group_id', 'create_time', 'last_time'])
     })
+  },
+  /**
+   * 获取所有文件列表
+   *
+   * @param {String} token
+   * @returns {Promise}
+   */
+  getFileList (token) {
+    return authentication('getFileList', token)
+    .then(() => {
+      return fileSystem.fileList()
+    })
+  },
+  /**
+   * 删除任意文件
+   *
+   * @param {String} token
+   * @param {String} uuid
+   * @returns {Promise}
+   */
+  deleteFile (token, uuid) {
+    return authentication('deleteFile', token)
+    .then(() => {
+      return fileSystem.deleteFile(uuid)
+    })
+  },
+  /**
+   * 下载任意文件
+   *
+   * @param {String} token
+   * @param {String} uuid
+   * @returns {Promise}
+   */
+  downloadFile (token, uuid) {
+    return authentication('downloadFile', token)
+    .then(() => {
+      return fileSystem.download(uuid)
+    })
   }
 
-  //  权限验证
-  // authentication
 }
 
 /**
