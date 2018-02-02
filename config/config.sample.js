@@ -5,6 +5,7 @@ let config = {
   PORT: 7999, // 程序启动所监听的端口
   serverUrl: 'http://127.0.0.1:7999', // nginx所配置的地址与端口 给用户邮件时会用到这个url。
   ImagePath: os.platform() === 'win32' ? path.join(__dirname, '../../images') : '/var/www/images',
+  filePath: os.platform() === 'win32' ? path.join(__dirname, '../../files') : '/var/www/files',
   ImageType: ['.jpg', '.JPG', '.png'],
   STDOUT: true, // 是否打印出来
   // ------- mysql ------------
