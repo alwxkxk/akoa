@@ -19,10 +19,16 @@ npm install
 ### 运行
 ```bash
 #先配置config/config.js
+cd /var/akoa/config/
+mv config.sample.js config.js #根据自身实际情况修改config.js
+
+#然后运行初始化文件，这个文件会检测并初始化mysql redis。
+npm run init
+
 #先手动运行，确认没有问题再使用pm2部署
-cd /var/akoa
 npm run dev
 
+#pm2正式部署
 pm2 start /var/akoa/src/app.js --name akoa --max-memory-restart 256M
 
 #查看日志
