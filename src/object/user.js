@@ -35,6 +35,7 @@ const user = {
       // 添加到检测列表
       redis.checkListAdd('name', name)
       redis.checkListAdd('nick_name', name)
+      userLog(name, {time: common.now(), action: '注册账号'})
       return Promise.resolve('账号注册成功')
     })
     .catch(e => {
@@ -255,6 +256,7 @@ const user = {
     return redis.getNameByToken(token)
       .then((name) => {
         // console.log(name, file)
+        userLog(name, {time: common.now(), action: '上传一个文件'})
         return fileSystem.upload(name, file)
       })
   },
@@ -281,6 +283,7 @@ const user = {
   deleteFile (token, uuid) {
     return redis.getNameByToken(token)
     .then(name => {
+      userLog(name, {time: common.now(), action: '删除一个文件'})
       return fileSystem.deleteFile(name, uuid)
     })
   },
@@ -295,6 +298,7 @@ const user = {
     return redis.getNameByToken(token)
     .then(name => {
       // 先验证文件是否属于他
+      userLog(name, {time: common.now(), action: '下载一个文件'})
       return fileSystem.download(name, uuid)
     })
   }

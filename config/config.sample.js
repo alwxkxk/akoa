@@ -7,7 +7,7 @@ let config = {
   ImagePath: os.platform() === 'win32' ? path.join(__dirname, '../../images') : '/var/www/images',
   filePath: os.platform() === 'win32' ? path.join(__dirname, '../../files') : '/var/www/files',
   ImageType: ['.jpg', '.JPG', '.png'],
-  STDOUT: true, // 是否打印出来
+  isDebug: process.env.NODE_ENV !== 'production', // 只有production才关闭debug功能
   // ------- mysql ------------
   mysqlConfig: {
     user: 'root',

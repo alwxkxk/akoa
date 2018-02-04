@@ -12,7 +12,7 @@ const fs = require('fs')
 const util = require('util')
 const emailer = require('./emailer.js')
 const log = require('./log.js')
-const STDOUT = require('../config/config.js').STDOUT
+const isDebug = require('../config/config.js').isDebug
 const redis = require('./redis.js')
 
 const user = require('./object/user.js')
@@ -58,7 +58,7 @@ const paramsRequireList = {
  */
 function checkParams (ctx, requiredList) {
   const requestBody = ctx.request.fields
-  if (STDOUT) console.log('fields:', requestBody)
+  if (isDebug) console.log('fields:', requestBody)
   const require = _.pick(paramsRequireList, requiredList)
   if (_.size(require) !== _.size(requiredList)) {
     throw 'requiredList必须在(' + _.keys(paramsRequireList) + '),' + requiredList + '有误'
@@ -69,7 +69,6 @@ function checkParams (ctx, requiredList) {
   if (result.error) {
     const details = { details: _.map(result.error.details, 'message') }
     ctx.body = common.httpResponse(1001, details)
-    if (STDOUT) console.log(details)
     const detailsString = JSON.stringify(details)
     log.warn(`${ctx.method} ${ctx.url} - ${detailsString}`)
   } else {
@@ -361,7 +360,9 @@ router.get('/userList', body(), setAll, async function (ctx, next) {
   if (!ctx.$token) return next()
 
   await administrator.getUserList(ctx.$token)
-  .then(userList => { ctx.body = common.httpResponse(0, userList) })
+  .then(userList => {
+    ctx.body = common.httpResponse(0, userList)
+  })
   .catch(err => { ctx.body = common.httpResponse(1, err) })
   return next()
 })
@@ -421,7 +422,7 @@ router.get('/image/:imageName', setAll, async function (ctx, next) {
 router.get('/checkNoRepeat/:key/:value', async function (ctx, next) {
   await redis.checkNoRepeat(ctx.params.key, ctx.params.value)
   .then(v => {
-    console.log(v)
+    // console.log(v)
     ctx.body = common.httpResponse(0, '通过检测')
   })
   .catch(err => { ctx.body = common.httpResponse(1, err) })

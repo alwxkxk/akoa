@@ -75,7 +75,7 @@ function initDatabase () {
         return reject('连接数据库失败。')
       }
       resolve()
-      console.log('连接数据库成功')
+      console.log(chalk.green('连接数据库成功'))
     })
   })
   .then(() => {
@@ -106,7 +106,7 @@ function initDatabase () {
           if (error) {
             return reject(`创建数据库 ${mysqlConfig.database} 失败。`)
           }
-          console.log(chalk.green(`创建数据库 ${mysqlConfig.database} 成功。`))
+          console.log(`创建数据库 ${mysqlConfig.database} 成功。`)
           return resolve()
         })
       })

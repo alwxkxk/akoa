@@ -3,7 +3,6 @@ const router = require('./router.js')
 const handleError = require('koa-handle-error')
 const log = require('./log.js')
 const api = require('./api.js')
-const STDOUT = require('../config/config.js').STDOUT
 const PORT = require('../config/config.js').PORT
 const redis = require('./redis.js')
 const cors = require('@koa/cors')
