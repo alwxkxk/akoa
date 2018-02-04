@@ -4,9 +4,6 @@ const mysqlConfig = require('../config/config.js').mysqlConfig
 const log = require('./log.js')
 var pool = mysql.createPool(mysqlConfig)
 
-// pool.on('acquire', function (connection) {
-//   console.log('Connection %d acquired', connection.threadId)
-// })
 pool.on('connection', function (connection) {
   // console.log('Connection %d built', connection.threadId)
   connection.on('error', function (err) {
@@ -14,12 +11,6 @@ pool.on('connection', function (connection) {
     log.error(err)
   })
 })
-// pool.on('enqueue', function () {
-//   console.log('Waiting for available connection slot')
-// })
-// pool.on('release', function (connection) {
-//   console.log('Connection %d released', connection.threadId)
-// })
 
 /**
  * 执行sql语句，返回Promise对象
@@ -108,8 +99,10 @@ function read (tableName, selectList, whereList) {
     sqlString = mysql.format(sqlString, _.concat([selectList, tableName], whereList))
     // console.log(sqlString)
     pool.query(sqlString, function (error, results, fields) {
-      if (error) return reject(error)
-      else resolve(results)
+      if (error) {
+        console.error('查询数据库失败，请检查数据库运行状态', error)
+        reject('查询数据库失败，请检查数据库运行状态')
+      } else resolve(results)
     })
   })
 }

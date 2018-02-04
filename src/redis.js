@@ -10,6 +10,7 @@ const log = require('./log.js')
 let client = redis.createClient(redisConfig)
 const checkList = require('../config/config.js').checkList
 const _ = require('lodash')
+const isDebug = require('../config/config.js').isDebug
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
 // 到此，可以使用加Async的后缀实现promise化 client.getAsync('foo').then(function(res) {
@@ -22,17 +23,17 @@ client.on('error', function (err) {
 
 client.on('connect', function (err) {
   if (err) console.log('Error ' + err)
-  console.log('redis connect.')
+  if (isDebug) console.log('成功连接 redis')
 })
 
 client.on('reconnecting', function (err) {
   if (err) console.log('Error ' + err)
-  console.log('redis reconnecting.')
+  if (isDebug) console.log('redis 重连')
 })
 
 client.on('end', function (err) {
   if (err) console.log('Error ' + err)
-  console.log('redis end.')
+  if (isDebug) console.log('redis 结束连接')
 })
 
 /**

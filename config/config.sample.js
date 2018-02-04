@@ -1,5 +1,6 @@
 const path = require('path')
 const os = require('os')
+process.env.NODE_ENV = 'development' // production || development
 
 let config = {
   PORT: 7999, // 程序启动所监听的端口
