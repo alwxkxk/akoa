@@ -11,7 +11,10 @@ let config = {
   isDebug: process.env.NODE_ENV !== 'production', // 只有production才关闭debug功能
   // ------- mysql ------------
   mysqlConfig: {
+    // host: '127.0.0.1',
+    // port: '3306',
     user: 'root',
+    // password: '',
     database: 'akoa',
     debug: false
   },
@@ -23,6 +26,8 @@ let config = {
   // ------- reids ------------
   redisConfig: {
     host: '127.0.0.1'
+    // port:''
+    // password:''
   },
   EXPIRE: 3600, // redis缓存的生存时间 1h,1*60*60
   checkList: ['name', 'nick_name', 'email'], // 用于重复检测，同时禁止其它用户以这些用户名注册
