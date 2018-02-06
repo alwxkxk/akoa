@@ -3,7 +3,9 @@ const PERMISESSION = {
   'getUserList': ['administrator'], // 取得所有用户列表
   'getFileList': ['administrator'], // 允许管理员获取所有文件列表
   'deleteFile': ['administrator'], // 删除任意文件
-  'downloadFile': ['administrator']// 下载任意文件
+  'downloadFile': ['administrator'], // 下载任意文件
+  'addUser': ['administrator'], // 添加用户
+  'findUser': ['administrator'] //获取用户信息
 }
 
 let group = {// 权限组id及对应身份

@@ -367,6 +367,32 @@ router.get('/userList', body(), setAll, async function (ctx, next) {
   return next()
 })
 
+// GET /api/user/:name 管理员获取某个用户的详细信息
+// request header or cookie 'token'
+router.get('/user/:name', body(), setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+  const name = ctx.params.name
+  await administrator.findUser(ctx.$token, name)
+  .then(user => {
+    ctx.body = common.httpResponse(0, user)
+  })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
+  return next()
+})
+
+// POST /api/user/:name 管理员手动添加用户
+// request header or cookie 'token'
+router.post('/user/:name', body(), setAll, async function (ctx, next) {
+  if (!ctx.$token) return next()
+  const name = ctx.params.name
+  await administrator.addUser(ctx.$token, name)
+  .then(user => {
+    ctx.body = common.httpResponse(0, user)
+  })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
+  return next()
+})
+
 // DELETE /api/user/:name 删除账号 暂时只能由管理员操作
 // request header or cookie 'token'
 router.del('/user/:name', body(), setAll, async function (ctx, next) {

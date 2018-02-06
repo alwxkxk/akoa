@@ -45,7 +45,37 @@ const administrator = {
       return Promise.reject(e)
     })
   },
-
+  /**
+   * 管理员添加用户，新用户的密码与账号一样
+   *
+   * @param {String} token
+   * @param {String} name
+   * @returns {Promise}
+   */
+  addUser (token, name) {
+    return authentication('addUser', token)// 先检查管理员是否有操作权限
+    .then(() => {
+      return user.register(name, name)// 管理员添加的用户，账号与密码相同
+    })
+  },
+/**
+ * 管理员获取某个用户详细信息
+ *
+ * @param {String} token
+ * @param {String} name
+ * @returns {Promise}
+ */
+  findUser (token, name) {
+    let need = ['name', 'nick_name', 'email', 'group_id', 'avatar', 'create_time', 'last_time']
+    return authentication('findUser', token)// 先检操作权限
+    .then(() => {
+      return mysql.read('user', need, ['name', name])
+    })
+    .then(reads => {
+      if (reads.length === 0) return Promise.reject('用户不存在')
+      else return Promise.resolve(reads[0])
+    })
+  },
   /**
    * 获取所有用户列表
    *
