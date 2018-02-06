@@ -36,7 +36,7 @@ const user = {
       redis.checkListAdd('name', name)
       redis.checkListAdd('nick_name', name)
       userLog(name, {time: common.now(), action: '注册账号'})
-      return Promise.resolve('账号注册成功')
+      return Promise.resolve({name: name, nick_name: name, create_time: time, last_time: time})
     })
     .catch(e => {
       if (e.code === 'ER_DUP_ENTRY') return Promise.reject('账号名重复')
