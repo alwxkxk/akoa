@@ -295,6 +295,25 @@ router.get('/file/:uuid', setAll, async function (ctx, next) {
   return next()
 })
 
+// GET /api/token/:token/file/:uuid 下载文件
+// response 成功的返回文件
+router.get('/token/:token/file/:uuid', setAll, async function (ctx, next) {
+  let token = ctx.params.token
+  if (!token) return next()
+  await administrator.isAdministrator(token)
+  .then(is => {
+    if (is) return administrator.downloadFile(token, ctx.params.uuid)
+    else return user.downloadFile(token, ctx.params.uuid)
+  })
+  .then(file => {
+    ctx.body = file
+    ctx.type = 'application/octet-stream'
+  })
+  .catch(err => { ctx.body = common.httpResponse(1, err) })
+
+  return next()
+})
+
 // post /api/email 用户申请 修改邮箱
 // request header or cookie 'token',body: {password:'',email:''}
 router.post('/email', body(), setAll, async function (ctx, next) {
