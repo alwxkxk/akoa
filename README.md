@@ -16,6 +16,7 @@ npm install
 将config.sample.js配置信息补全并改名为config.js才能启动。
 - 如果mysql 与redis有设置密码需要在配置文件中额外填写。
 - 需要配置邮箱才能发送邮件 ，且修改`serverUrl`到你对应的网址。
+- 需要新增/var/www/files 才能上传文件。
 ### 运行
 ```bash
 #先配置config/config.js
